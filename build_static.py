@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Build a static copy of the screener into dist/ for hosting without a server.
 
-    python3 build_static.py
+    python3 build_static.py            # uses the data already on this machine
+    python3 build_static.py --refresh  # first refreshes payment history, trading history, issuers and filings
 
 Pulls fresh data through the same code the local server uses, writes it to dist/bonds.json, and copies
 index.html with three changes: it reads the snapshot instead of /api/bonds, the Refresh link is hidden,
@@ -12,7 +13,7 @@ import json, os, shutil, sys
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
-import issuers, payouts, server  # noqa: E402
+import filings, issuers, liquidity, payouts, server  # noqa: E402
 
 DIST = os.path.join(ROOT, "dist")
 NOTICE = ("Information only, not investment advice. Prices and yields come from NSE’s public bond feed, may be delayed, "
@@ -25,13 +26,29 @@ def swap(text, old, new):
     return text.replace(old, new)
 
 
+MIN_BONDS = 3000  # a normal day lists ~4,700. Fewer means a blocked or partial fetch: never publish that.
+
+
+def refresh_sources():
+    """The slow jobs the local server runs in the background. Each one is incremental, so a cached data/ keeps this short."""
+    opener = server.nse_opener()
+    payouts.update(opener)
+    liquidity.update()
+    issuers.fetch()
+    if filings.pypdf is not None:
+        filings.update(opener)
+
+
 def main():
+    if "--refresh" in sys.argv:
+        refresh_sources()
     server._state["obs"] = payouts.frequencies()
     server._state["iss"] = issuers.load()
     server.refresh_liquidity(download=False)
     data = server.current(force=True)
-    if not data.get("bonds"):
-        raise SystemExit("build_static: no bonds fetched: %s" % data.get("error"))
+    if len(data.get("bonds", [])) < MIN_BONDS:
+        raise SystemExit("build_static: only %d bonds fetched (need %d), not publishing: %s"
+                         % (len(data.get("bonds", [])), MIN_BONDS, data.get("error")))
     # the snapshot only needs what the page reads
     data = {k: data[k] for k in ("asOf", "bonds", "observed", "error") if k in data}
     data["payoutsRunning"] = False

@@ -1,0 +1,57 @@
+# Rebuilds the static site from fresh NSE data every weekday evening and publishes it to the
+# vercel-snapshot branch, which Vercel turns into the protected preview. main itself is never deployed.
+name: Refresh snapshot
+
+on:
+  schedule:
+    - cron: "30 14 * * 1-5"   # 20:00 IST, after NSE publishes the day's files
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install pypdf
+
+      # keeps payment history, trading history and issuer data between runs, so each run only adds the new day
+      - uses: actions/cache@v4
+        with:
+          path: data
+          key: bond-data-${{ github.run_id }}
+          restore-keys: bond-data-
+
+      - name: Build the snapshot from fresh data
+        run: python build_static.py --refresh
+
+      - uses: actions/checkout@v4
+        with:
+          ref: vercel-snapshot
+          path: snap
+
+      - name: Publish to vercel-snapshot
+        run: |
+          rm -rf snap/dist && mkdir snap/dist && cp dist/* snap/dist/
+          cd snap
+          git add -A dist
+          if git diff --cached --quiet; then
+            echo "Nothing changed, nothing to publish."
+          else
+            # Vercel's free plan only deploys commits made by the account owner, so commit as them
+            git -c user.name="Tejasv Singh" -c user.email="Tejasvsingh001@gmail.com" \
+              commit -m "Refresh data snapshot $(date -u +%Y-%m-%d)"
+            git push
+          fi

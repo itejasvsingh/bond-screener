@@ -6,325 +6,1814 @@
 <title>Ledger — Bond Screener</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>try{var t=JSON.parse(localStorage.getItem('ledger3_theme'));document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'system'}catch(e){document.documentElement.dataset.theme='system'}</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+<script>
+try {
+  var t = JSON.parse(localStorage.getItem('ledger3_theme'));
+  document.documentElement.dataset.theme = (t === 'light' || t === 'dark') ? t : 'system';
+  var tpl = JSON.parse(localStorage.getItem('ledger3_tpl'));
+  if (['clean','midnight','ledger','terminal','soft'].includes(tpl)) {
+    document.documentElement.dataset.template = tpl;
+  }
+} catch(e) {
+  document.documentElement.dataset.theme = 'system';
+}
+</script>
 <style>
-  :root{
-    color-scheme:dark;
-    --bg:#0B0E13; --surface:#12161F; --surface-2:#171C27; --border:#232938; --border-soft:#1B212E;
-    --text:#E7E5DE; --text-dim:#8A90A3; --text-faint:#6A7188;
-    --gold:#C9A24B; --gold-dim:#8A733A; --green:#5FA97A; --red:#C1604F; --blue:#8FB3E0;
-    --on-gold:#14110A; --gold-hover:#D8B25E; --gold-tint:rgba(201,162,75,.08); --row-hover:rgba(201,162,75,.05);
-    --veil:rgba(6,7,10,.6); --veil-dlg:rgba(6,7,10,.7);
-    --hi-fg:#7FC79A; --hi-bd:#2F5240; --hi-bg:rgba(95,169,122,.08);
-    --mid-fg:#D8B25E; --mid-bd:#5C4B2A; --mid-bg:rgba(201,162,75,.08);
-    --lo-fg:#D08172; --lo-bd:#5C332A; --lo-bg:rgba(193,96,79,.08);
-    --sh-fg:#E0A96B; --sh-bd:#5C4328; --sh-bg:rgba(224,169,107,.08);
-    --me-fg:#8FB3E0; --me-bd:#33486B; --me-bg:rgba(143,179,224,.08);
-    --lg-fg:#B79AE0; --lg-bd:#4A3B6B; --lg-bg:rgba(183,154,224,.08);
-    --buy-bg:#2F5240; --buy-bd:#3A6B4F; --buy-fg:#A9E0BE;
-    --sell-bg:#5C332A; --sell-bd:#7A4536; --sell-fg:#EBB0A0;
-    --kite-bg:#1d3a5f; --kite-bd:#2c5a93; --kite-fg:#b9d6f7;
-    --bad-bd:#7A4536; --bad-fg:#EBB0A0; --bad-bg:rgba(193,96,79,.08);
-    --mono: ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-    --sans: -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;
-    --serif: "Iowan Old Style",Georgia,serif;
+  :root {
+    color-scheme: dark;
+    --bg: #0B0E13;
+    --surface: #12161F;
+    --surface-2: #171C27;
+    --surface-3: #1E2534;
+    --border: #252C3D;
+    --border-soft: #1B212E;
+    --text: #ECEAE2;
+    --text-dim: #949BB0;
+    --text-faint: #6D748B;
+    --gold: #D4AF5A;
+    --gold-dim: #8A733A;
+    --green: #4EBA7D;
+    --red: #E06C5A;
+    --blue: #58A6FF;
+    --orange: #E5A952;
+    --violet: #B79AE0;
+    --on-gold: #14110A;
+    --gold-hover: #E1BE6B;
+    --gold-tint: rgba(212,175,90,.10);
+    --row-hover: rgba(212,175,90,.06);
+    --veil: rgba(5,7,11,.65);
+    --veil-dlg: rgba(5,7,11,.75);
+    --hi-fg: #72D59B; --hi-bd: #2C5940; --hi-bg: rgba(78,186,125,.10);
+    --mid-fg: #E5BA63; --mid-bd: #5C4B2A; --mid-bg: rgba(212,175,90,.10);
+    --lo-fg: #EB8F80; --lo-bd: #63342B; --lo-bg: rgba(224,108,90,.10);
+    --sh-fg: #E8B278; --sh-bd: #5C4328; --sh-bg: rgba(232,178,120,.10);
+    --me-fg: #8FB8ED; --me-bd: #314A70; --me-bg: rgba(127,168,224,.10);
+    --lg-fg: #C2A6EB; --lg-bd: #4A3B6B; --lg-bg: rgba(183,154,224,.10);
+    --buy-bg: #234734; --buy-bd: #366B4E; --buy-fg: #9EE8BE;
+    --sell-bg: #4F2922; --sell-bd: #7A4136; --sell-fg: #F5B5A7;
+    --kite-bg: #1B375C; --kite-bd: #2E5B94; --kite-fg: #B8D7FA;
+    --bad-bd: #7A4536; --bad-fg: #F0B4A4; --bad-bg: rgba(224,108,90,.09);
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --shadow-card: 0 1px 3px rgba(0,0,0,.22), 0 8px 24px rgba(0,0,0,.18);
   }
-  @media (prefers-color-scheme:light){ :root:not([data-theme="dark"]){
-    color-scheme:light;
-    --bg:#F5F3EC; --surface:#FFFFFF; --surface-2:#F1EEE5; --border:#DDD8C9; --border-soft:#ECE8DB;
-    --text:#1C1D21; --text-dim:#5E6475; --text-faint:#80869A;
-    --gold:#8A6A1C; --gold-dim:#C8AE6A; --green:#1E7A45; --red:#B3392A; --blue:#2D5E9E;
-    --on-gold:#FFFFFF; --gold-hover:#74590F; --gold-tint:rgba(138,106,28,.09); --row-hover:rgba(138,106,28,.06);
-    --veil:rgba(30,28,20,.40); --veil-dlg:rgba(30,28,20,.5);
-    --hi-fg:#17653A; --hi-bd:#A9D8BB; --hi-bg:#E4F4EA;
-    --mid-fg:#7A5A0A; --mid-bd:#E2CD8E; --mid-bg:#FAF1D6;
-    --lo-fg:#A12F22; --lo-bd:#EBB4AC; --lo-bg:#FBE6E3;
-    --sh-fg:#9A5412; --sh-bd:#EBC79F; --sh-bg:#FCEEDD;
-    --me-fg:#2D5E9E; --me-bd:#B3CBE8; --me-bg:#E6EFFA;
-    --lg-fg:#5E3E9C; --lg-bd:#CDBDE8; --lg-bg:#EEE8FA;
-    --buy-bg:#DDF1E5; --buy-bd:#9CCFB1; --buy-fg:#17653A;
-    --sell-bg:#FBE3DF; --sell-bd:#E8AFA6; --sell-fg:#A12F22;
-    --kite-bg:#E2EDFB; --kite-bd:#A9C6EC; --kite-fg:#1F4E8C;
-    --bad-bd:#E8AFA6; --bad-fg:#A12F22; --bad-bg:#FBE6E3;
-  } }
-  :root[data-theme="light"]{
-    color-scheme:light;
-    --bg:#F5F3EC; --surface:#FFFFFF; --surface-2:#F1EEE5; --border:#DDD8C9; --border-soft:#ECE8DB;
-    --text:#1C1D21; --text-dim:#5E6475; --text-faint:#80869A;
-    --gold:#8A6A1C; --gold-dim:#C8AE6A; --green:#1E7A45; --red:#B3392A; --blue:#2D5E9E;
-    --on-gold:#FFFFFF; --gold-hover:#74590F; --gold-tint:rgba(138,106,28,.09); --row-hover:rgba(138,106,28,.06);
-    --veil:rgba(30,28,20,.40); --veil-dlg:rgba(30,28,20,.5);
-    --hi-fg:#17653A; --hi-bd:#A9D8BB; --hi-bg:#E4F4EA;
-    --mid-fg:#7A5A0A; --mid-bd:#E2CD8E; --mid-bg:#FAF1D6;
-    --lo-fg:#A12F22; --lo-bd:#EBB4AC; --lo-bg:#FBE6E3;
-    --sh-fg:#9A5412; --sh-bd:#EBC79F; --sh-bg:#FCEEDD;
-    --me-fg:#2D5E9E; --me-bd:#B3CBE8; --me-bg:#E6EFFA;
-    --lg-fg:#5E3E9C; --lg-bd:#CDBDE8; --lg-bg:#EEE8FA;
-    --buy-bg:#DDF1E5; --buy-bd:#9CCFB1; --buy-fg:#17653A;
-    --sell-bg:#FBE3DF; --sell-bd:#E8AFA6; --sell-fg:#A12F22;
-    --kite-bg:#E2EDFB; --kite-bd:#A9C6EC; --kite-fg:#1F4E8C;
-    --bad-bd:#E8AFA6; --bad-fg:#A12F22; --bad-bg:#FBE6E3;
+
+  @media (prefers-color-scheme:light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #F5F2E9;
+      --surface: #FFFFFF;
+      --surface-2: #F0ECE1;
+      --surface-3: #E6E0D2;
+      --border: #DCD5C4;
+      --border-soft: #EAE5D7;
+      --text: #181A1F;
+      --text-dim: #565C6E;
+      --text-faint: #787F92;
+      --gold: #8A6818;
+      --gold-dim: #C8AE6A;
+      --green: #187944;
+      --red: #B83526;
+      --blue: #0284C7;
+      --orange: #D97706;
+      --violet: #623FA0;
+      --on-gold: #FFFFFF;
+      --gold-hover: #715410;
+      --gold-tint: rgba(138,104,24,.09);
+      --row-hover: rgba(138,104,24,.05);
+      --veil: rgba(24,22,16,.42);
+      --veil-dlg: rgba(24,22,16,.52);
+      --hi-fg: #146337; --hi-bd: #9ED4B4; --hi-bg: #E3F5EA;
+      --mid-fg: #7A5808; --mid-bd: #DFC883; --mid-bg: #FAF0D2;
+      --lo-fg: #9E2B1E; --lo-bd: #E8AFA6; --lo-bg: #FCE6E3;
+      --sh-fg: #964F0E; --sh-bd: #E8C399; --sh-bg: #FCECDD;
+      --me-fg: #245594; --me-bd: #ADC7E6; --me-bg: #E5EFFA;
+      --lg-fg: #5B3B99; --lg-bd: #C8B7E6; --lg-bg: #EFE9FA;
+      --buy-bg: #DCF2E5; --buy-bd: #96CEAD; --buy-fg: #146337;
+      --sell-bg: #FCE2DE; --sell-bd: #E6ABA2; --sell-fg: #9E2B1E;
+      --kite-bg: #E0ECFC; --kite-bd: #A4C3EB; --kite-fg: #1D4B8A;
+      --bad-bd: #E6ABA2; --bad-fg: #9E2B1E; --bad-bg: #FCE6E3;
+      --shadow-card: 0 1px 2px rgba(24,22,16,.05), 0 8px 24px rgba(24,22,16,.06);
+    }
   }
-  :root[data-theme="dark"]{ color-scheme:dark }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;padding:24px 20px 80px}
-  .wrap{max-width:1360px;margin:0 auto}
-  header{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:14px;border-bottom:1px solid var(--border)}
-  .brand-mark{font-family:var(--serif);font-size:27px;font-weight:600}
-  .brand-mark span{color:var(--gold);font-style:italic}
-  .brand-sub{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:3px}
-  .stats{display:flex;gap:24px;flex-wrap:wrap}
-  .stat{text-align:right}
-  .stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin-bottom:3px}
-  .stat-value{font-family:var(--mono);font-size:17px}
-  .pos{color:var(--green)} .neg{color:var(--red)} .gold{color:var(--gold)} .dim{color:var(--text-dim)}
-  .banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--surface);border:1px dashed var(--border);border-radius:6px;padding:8px 12px;margin-bottom:14px}
-  .banner b{color:var(--gold)} .spacer{flex:1}
-  .linkbtn{background:none;border:none;color:var(--text-dim);font:inherit;text-decoration:underline;cursor:pointer;padding:0}
-  .linkbtn:hover{color:var(--gold)}
-  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px}
-  .tab{background:none;border:none;color:var(--text-faint);font:600 13px var(--sans);padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
-  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
-  .view{display:none} .view.active{display:block}
-  select,input[type=text],input[type=number],.btn{font:13px var(--sans);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:6px;outline:none}
-  select{cursor:pointer}
-  .btn{cursor:pointer;font-weight:500;text-decoration:none;display:inline-block}
-  .btn:hover{border-color:var(--gold-dim);color:var(--gold)}
-  .btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
-  .btn-primary{background:var(--gold);border-color:var(--gold);color:var(--on-gold);font-weight:600}
-  .btn-primary:hover{background:var(--gold-hover);color:var(--on-gold)}
-  .btn-sm{padding:4px 9px;font-size:12px}
-  .btn-buy{background:var(--buy-bg);border-color:var(--buy-bd);color:var(--buy-fg)}
-  .btn-sell{background:var(--sell-bg);border-color:var(--sell-bd);color:var(--sell-fg)}
-  .btn-kite{background:var(--kite-bg);border-color:var(--kite-bd);color:var(--kite-fg)}
-  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
-  .filters label.chk{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text-dim)}
-  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-  .chip{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:99px;padding:6px 14px;font:500 13px var(--sans);cursor:pointer}
-  .chip b{font-family:var(--mono);font-size:11px;margin-left:6px;color:var(--text-faint);font-weight:500}
-  .chip.on{border-color:var(--gold);color:var(--gold);background:var(--gold-tint)}
-  .meta{font-size:12px;color:var(--text-dim);margin:2px 0 8px}
-  .scroll{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow-x:auto}
-  table{width:100%;border-collapse:collapse}
-  th{text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);font-weight:600;padding:11px 12px;border-bottom:1px solid var(--border);background:var(--surface-2);white-space:nowrap}
-  td{padding:10px 12px;border-bottom:1px solid var(--border-soft);white-space:nowrap;text-align:right;font-size:13px}
-  th.l,td.l{text-align:left}
-  tbody tr.row{cursor:pointer}
-  tbody tr.row:hover{background:var(--row-hover)}
-  tr:last-child td{border-bottom:none}
-  .num{font-family:var(--mono)}
-  .nm{font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis}
-  .sub{font-family:var(--mono);font-size:10.5px;color:var(--text-faint)}
-  .pill{display:inline-block;font:600 10.5px var(--mono);padding:3px 8px;border-radius:4px;border:1px solid}
-  .r-hi{color:var(--hi-fg);border-color:var(--hi-bd);background:var(--hi-bg)}
-  .r-mid{color:var(--mid-fg);border-color:var(--mid-bd);background:var(--mid-bg)}
-  .r-lo{color:var(--lo-fg);border-color:var(--lo-bd);background:var(--lo-bg)}
-  .r-nr{color:var(--text-dim);border-color:var(--border);background:transparent}
-  .t-short{color:var(--sh-fg);border-color:var(--sh-bd);background:var(--sh-bg)}
-  .t-medium{color:var(--me-fg);border-color:var(--me-bd);background:var(--me-bg)}
-  .t-long{color:var(--lg-fg);border-color:var(--lg-bd);background:var(--lg-bg)}
-  .pill.f{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-tint);letter-spacing:.04em}
-  .paystrip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0;padding:11px 14px;border:1px solid var(--gold-dim);background:var(--gold-tint);border-radius:8px}
-  .paystrip .big{font:600 15px var(--sans);color:var(--gold)}
-  .pill.l-liquid{color:var(--hi-fg);border-color:var(--hi-bd);background:var(--hi-bg)}
-  .pill.l-active{color:var(--me-fg);border-color:var(--me-bd);background:var(--me-bg)}
-  .pill.l-thin{color:var(--mid-fg);border-color:var(--mid-bd);background:var(--mid-bg)}
-  .pill.l-none{color:var(--lo-fg);border-color:var(--lo-bd);background:var(--lo-bg)}
-  .yld{color:var(--gold);font-weight:600}
-  .empty{padding:50px 20px;text-align:center;color:var(--text-dim)}
-  .more{padding:14px;text-align:center}
-  /* drawer */
-  .veil{position:fixed;inset:0;background:var(--veil);display:none;z-index:40}
-  .veil.open{display:block}
-  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100vw);background:var(--surface);border-left:1px solid var(--border);z-index:50;transform:translateX(100%);transition:transform .18s;overflow-y:auto;padding:22px 22px 60px}
-  .drawer.open{transform:none}
-  .dh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-  .dh h2{font-family:var(--serif);font-size:22px;margin:0 0 4px}
-  .x{background:none;border:none;color:var(--text-dim);font-size:26px;line-height:1;cursor:pointer}
-  .badges{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
-  h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin:22px 0 8px}
-  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .cell{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
-  .cell .k{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em}
-  .cell .v{font-family:var(--mono);font-size:15px;margin-top:3px}
-  .cell .n{font-size:10.5px;color:var(--text-faint);margin-top:2px}
-  .note{font-size:12px;color:var(--text-dim);line-height:1.5;margin:8px 0}
-  .warn{border:1px solid var(--mid-bd);background:var(--mid-bg);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--mid-fg);margin:10px 0;line-height:1.5}
-  .ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
-  .ctl label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim)}
-  .ctl label.row{flex-direction:row;align-items:center;gap:6px}
-  .kv{width:100%} .kv td{padding:7px 0;font-size:13px} .kv td:last-child{text-align:right;font-family:var(--mono)}
-  .kv tr.tot td{font-weight:600;font-size:15px;color:var(--gold)}
-  .mini th,.mini td{padding:7px 9px;font-size:12px}
-  .mini{border:1px solid var(--border);border-radius:8px;overflow:hidden}
-  .box{max-height:230px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
-  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--gold-dim);padding:10px 16px;border-radius:8px;font-size:13px;z-index:80;display:none;max-width:90vw}
-  dialog{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:22px;width:min(520px,94vw)}
-  dialog::backdrop{background:var(--veil-dlg)}
-  dialog h2{font-family:var(--serif);margin:0 0 10px;font-size:20px}
-  dialog label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text-dim);margin:10px 0}
-  dialog input{width:100%}
-  .tgt{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
-  @media (max-width:720px){ .grid{grid-template-columns:repeat(2,1fr)} header{flex-direction:column;align-items:flex-start} }
+
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #F5F2E9;
+    --surface: #FFFFFF;
+    --surface-2: #F0ECE1;
+    --surface-3: #E6E0D2;
+    --border: #DCD5C4;
+    --border-soft: #EAE5D7;
+    --text: #181A1F;
+    --text-dim: #565C6E;
+    --text-faint: #787F92;
+    --gold: #8A6818;
+    --gold-dim: #C8AE6A;
+    --green: #187944;
+    --red: #B83526;
+    --blue: #0284C7;
+    --orange: #D97706;
+    --violet: #623FA0;
+    --on-gold: #FFFFFF;
+    --gold-hover: #715410;
+    --gold-tint: rgba(138,104,24,.09);
+    --row-hover: rgba(138,104,24,.05);
+    --veil: rgba(24,22,16,.42);
+    --veil-dlg: rgba(24,22,16,.52);
+    --hi-fg: #146337; --hi-bd: #9ED4B4; --hi-bg: #E3F5EA;
+    --mid-fg: #7A5808; --mid-bd: #DFC883; --mid-bg: #FAF0D2;
+    --lo-fg: #9E2B1E; --lo-bd: #E8AFA6; --lo-bg: #FCE6E3;
+    --sh-fg: #964F0E; --sh-bd: #E8C399; --sh-bg: #FCECDD;
+    --me-fg: #245594; --me-bd: #ADC7E6; --me-bg: #E5EFFA;
+    --lg-fg: #5B3B99; --lg-bd: #C8B7E6; --lg-bg: #EFE9FA;
+    --buy-bg: #DCF2E5; --buy-bd: #96CEAD; --buy-fg: #146337;
+    --sell-bg: #FCE2DE; --sell-bd: #E6ABA2; --sell-fg: #9E2B1E;
+    --kite-bg: #E0ECFC; --kite-bd: #A4C3EB; --kite-fg: #1D4B8A;
+    --bad-bd: #E6ABA2; --bad-fg: #9E2B1E; --bad-bg: #FCE6E3;
+    --shadow-card: 0 1px 2px rgba(24,22,16,.05), 0 8px 24px rgba(24,22,16,.06);
+  }
+  :root[data-theme="dark"] { color-scheme: dark; }
+
+  /* ===== Base Layout & Reset ===== */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13.5px;
+    line-height: 1.45;
+    min-height: 100vh;
+    padding: 18px 20px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; }
+  .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .pos { color: var(--green); }
+  .neg { color: var(--red); }
+  .gold { color: var(--gold); }
+  .dim { color: var(--text-dim); }
+  .spacer { flex: 1; }
+
+  /* ===== Header & KPI Strip ===== */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-bottom: 14px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .brand-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .brand-mark {
+    font-family: var(--serif);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .brand-mark span {
+    color: var(--gold);
+    font-style: italic;
+    font-weight: 500;
+  }
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--orange);
+    display: inline-block;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--orange) 20%, transparent);
+  }
+  .status-dot.ok {
+    background: var(--green);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 20%, transparent);
+  }
+  .status-dot.demo {
+    background: var(--blue);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 20%, transparent);
+  }
+  .status-dot.err {
+    background: var(--red);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 20%, transparent);
+  }
+  .brand-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+  .header-right {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 7px 12px;
+    min-width: 114px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: right;
+  }
+  .stat.ctrl-stat {
+    text-align: left;
+    min-width: auto;
+    padding: 6px 10px;
+  }
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-faint);
+    margin-bottom: 2px;
+    font-weight: 600;
+  }
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 15.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat select {
+    padding: 3px 7px;
+    font-size: 12px;
+    border-radius: 6px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+  }
+
+  /* ===== Banner Bar ===== */
+  .banner {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 8px 13px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow-card);
+  }
+  .banner b { color: var(--gold); font-weight: 600; }
+  .banner-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .linkbtn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 2px 0;
+  }
+  .linkbtn:hover { color: var(--gold); }
+
+  /* ===== Top Bar: Tabs + View Controls ===== */
+  .nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 12px;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .tab {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font: 600 13px var(--sans);
+    padding: 9px 15px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+  .tab-cnt {
+    font: 600 11px var(--mono);
+    padding: 1px 6px;
+    border-radius: 99px;
+    background: var(--surface-2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .tab.active .tab-cnt {
+    background: var(--gold-tint);
+    color: var(--gold);
+    border-color: var(--gold-dim);
+  }
+  .nav-tools {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 5px;
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ===== Form Controls & Buttons ===== */
+  select, input[type=text], input[type=number], .btn {
+    font: 12.5px var(--sans);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    outline: none;
+  }
+  select { cursor: pointer; }
+  select:hover, input[type=text]:hover, input[type=number]:hover {
+    border-color: color-mix(in srgb, var(--gold) 45%, var(--border));
+  }
+  .btn {
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .btn:focus-visible, select:focus-visible, input:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 1px;
+  }
+  .btn-primary {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--on-gold);
+    font-weight: 600;
+  }
+  .btn-primary:hover {
+    background: var(--gold-hover);
+    border-color: var(--gold-hover);
+    color: var(--on-gold);
+  }
+  .btn-sm { padding: 4px 9px; font-size: 12px; }
+  .btn-buy { background: var(--buy-bg); border-color: var(--buy-bd); color: var(--buy-fg); font-weight: 600; }
+  .btn-sell { background: var(--sell-bg); border-color: var(--sell-bd); color: var(--sell-fg); font-weight: 600; }
+  .btn-kite { background: var(--kite-bg); border-color: var(--kite-bd); color: var(--kite-fg); font-weight: 600; }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--text-dim); }
+  .btn-ghost:hover { background: var(--surface-2); border-color: var(--border); color: var(--text); }
+
+  /* ===== Market Overview KPI Strip & Yield Curve ===== */
+  .mkt-pulse {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .pulse-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 9px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: var(--shadow-card);
+  }
+  .pulse-k {
+    font-size: 10.5px;
+    color: var(--text-faint);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .pulse-v {
+    font-family: var(--mono);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .pulse-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ===== Yield Curve Panel ===== */
+  .curve-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-card);
+    display: none;
+  }
+  .curve-panel.open { display: block; }
+  .curve-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .curve-title {
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .curve-legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+  .leg-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .leg-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .curve-wrap {
+    position: relative;
+    width: 100%;
+    height: 195px;
+  }
+  .curve-svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .curve-tip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--surface-2);
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 11.5px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.35);
+    z-index: 20;
+    display: none;
+    min-width: 190px;
+  }
+
+  /* ===== Term Chips & Filter Toolbar ===== */
+  .chips-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 9px;
+  }
+  .chips {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 99px;
+    padding: 5px 12px;
+    font: 500 12px var(--sans);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .chip:hover {
+    border-color: var(--gold-dim);
+    color: var(--text);
+  }
+  .chip b {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-faint);
+    font-weight: 600;
+    background: var(--surface-2);
+    padding: 1px 6px;
+    border-radius: 99px;
+  }
+  .chip.on {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-tint);
+  }
+  .chip.on b {
+    background: color-mix(in srgb, var(--gold) 20%, transparent);
+    color: var(--gold);
+  }
+
+  .filter-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 9px 11px;
+    margin-bottom: 9px;
+    box-shadow: var(--shadow-card);
+  }
+  .filters-main {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1 1 190px;
+    min-width: 175px;
+    max-width: 260px;
+    display: flex;
+    align-items: center;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding-left: 28px;
+    padding-right: 38px;
+    background: var(--surface-2);
+  }
+  .search-ico {
+    position: absolute;
+    left: 9px;
+    color: var(--text-faint);
+    pointer-events: none;
+    font-size: 12.5px;
+  }
+  .search-kbd {
+    position: absolute;
+    right: 7px;
+    font: 500 10px var(--mono);
+    color: var(--text-faint);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 0 4px;
+    pointer-events: none;
+  }
+  .search-clr {
+    position: absolute;
+    right: 6px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 2px 4px;
+    display: none;
+  }
+  .f-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-dim);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1px 7px;
+  }
+  .f-item input[type=number] {
+    border: none;
+    background: transparent;
+    padding: 4px 2px;
+    width: 48px;
+    font-family: var(--mono);
+  }
+  .f-item input[type=number]:focus-visible { outline: none; }
+  .filters-adv {
+    display: none;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+  }
+  .filters-adv.open { display: flex; }
+  label.chk {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 4px 9px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    user-select: none;
+  }
+  label.chk:hover { border-color: var(--gold-dim); color: var(--text); }
+  label.chk input { accent-color: var(--gold); margin: 0; cursor: pointer; }
+
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 3px 2px 7px;
+  }
+  .meta {
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  /* ===== Data Table ===== */
+  .scroll {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+    max-height: 75vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-card);
+    position: relative;
+  }
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    text-align: right;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-faint);
+    font-weight: 600;
+    padding: 10px 9px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    white-space: nowrap;
+    user-select: none;
+  }
+  thead th.sortable {
+    cursor: pointer;
+    transition: color .15s, background-color .15s;
+  }
+  thead th.sortable:hover {
+    color: var(--gold);
+    background: color-mix(in srgb, var(--gold) 8%, var(--surface-2));
+  }
+  thead th.sorted {
+    color: var(--gold);
+  }
+  .sort-arr {
+    display: inline-block;
+    margin-left: 2px;
+    font-size: 10px;
+    opacity: .85;
+  }
+  td {
+    padding: 9px 9px;
+    border-bottom: 1px solid var(--border-soft);
+    white-space: nowrap;
+    text-align: right;
+    font-size: 12.5px;
+    vertical-align: middle;
+  }
+  th.l, td.l { text-align: left; }
+  thead th.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 7;
+    padding-left: 13px;
+  }
+  tbody td.sticky-col {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background: var(--surface);
+    border-right: 1px solid var(--border-soft);
+    padding-left: 13px;
+  }
+  tbody tr.row { cursor: pointer; transition: background-color .1s; }
+  tbody tr.row:hover td { background: var(--row-hover); }
+  tbody tr.row:hover td.sticky-col { background: color-mix(in srgb, var(--gold) 8%, var(--surface)); }
+  tbody tr.row.selected td {
+    background: var(--gold-tint);
+  }
+  tbody tr.row.selected td.sticky-col {
+    box-shadow: inset 3px 0 0 var(--gold);
+    background: color-mix(in srgb, var(--gold) 14%, var(--surface));
+  }
+  tr:last-child td { border-bottom: none; }
+  .nm {
+    font-weight: 600;
+    max-width: 230px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+  }
+  .sub {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-faint);
+    margin-top: 2px;
+  }
+
+  /* ===== Pills & Micro Visual Bars ===== */
+  .pill {
+    display: inline-block;
+    font: 600 10px var(--mono);
+    padding: 2px 7px;
+    border-radius: 5px;
+    border: 1px solid;
+    line-height: 1.25;
+  }
+  .r-hi { color: var(--hi-fg); border-color: var(--hi-bd); background: var(--hi-bg); }
+  .r-mid { color: var(--mid-fg); border-color: var(--mid-bd); background: var(--mid-bg); }
+  .r-lo { color: var(--lo-fg); border-color: var(--lo-bd); background: var(--lo-bg); }
+  .r-nr { color: var(--text-dim); border-color: var(--border); background: transparent; }
+  .t-short { color: var(--sh-fg); border-color: var(--sh-bd); background: var(--sh-bg); }
+  .t-medium { color: var(--me-fg); border-color: var(--me-bd); background: var(--me-bg); }
+  .t-long { color: var(--lg-fg); border-color: var(--lg-bd); background: var(--lg-bg); }
+  .pill.f {
+    color: var(--gold);
+    border-color: var(--gold-dim);
+    background: var(--gold-tint);
+    letter-spacing: .02em;
+  }
+  .pill.l-liquid { color: var(--hi-fg); border-color: var(--hi-bd); background: var(--hi-bg); }
+  .pill.l-active { color: var(--me-fg); border-color: var(--me-bd); background: var(--me-bg); }
+  .pill.l-thin { color: var(--mid-fg); border-color: var(--mid-bd); background: var(--mid-bg); }
+  .pill.l-none { color: var(--lo-fg); border-color: var(--lo-bd); background: var(--lo-bg); }
+
+  .yld { color: var(--gold); font-weight: 600; font-size: 13px; }
+  .mini-bar {
+    width: 48px;
+    height: 3.5px;
+    background: var(--surface-3);
+    border-radius: 99px;
+    overflow: hidden;
+    margin: 3px 0 0 auto;
+  }
+  .mini-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--gold);
+  }
+  .mini-fill.liq-liquid { background: var(--green); }
+  .mini-fill.liq-active { background: var(--blue); }
+  .mini-fill.liq-thin { background: var(--orange); }
+  .mini-fill.liq-none { background: var(--red); }
+
+  .empty {
+    padding: 52px 20px;
+    text-align: center;
+    color: var(--text-dim);
+  }
+  .more {
+    padding: 14px;
+    text-align: center;
+    border-top: 1px solid var(--border-soft);
+  }
+
+  /* ===== Slide-over Detail Drawer ===== */
+  .veil {
+    position: fixed;
+    inset: 0;
+    background: var(--veil);
+    backdrop-filter: blur(2px);
+    z-index: 40;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .28s cubic-bezier(.22,1,.36,1);
+  }
+  .veil.open { opacity: 1; pointer-events: auto; }
+
+  .drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(680px, 100vw);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 50;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.22,1,.36,1);
+    will-change: transform;
+    overflow-y: auto;
+    padding: 0 24px 64px;
+    box-shadow: -12px 0 40px rgba(0,0,0,.35);
+  }
+  .drawer.open { transform: none; }
+
+  .dh-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(10px);
+    padding: 18px 0 12px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+  }
+  .dh {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .dh h2 {
+    font-family: var(--serif);
+    font-size: 22px;
+    margin: 0 0 4px;
+    letter-spacing: -.015em;
+    line-height: 1.2;
+  }
+  .x {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .x:hover { color: var(--text); border-color: var(--gold-dim); }
+  .dh-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .badges {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .dh-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .paystrip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+    padding: 12px 14px;
+    border: 1px solid var(--gold-dim);
+    background: var(--gold-tint);
+    border-radius: var(--radius-md);
+  }
+  .paystrip .big {
+    font: 600 14.5px var(--sans);
+    color: var(--gold);
+  }
+
+  h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-faint);
+    margin: 22px 0 8px;
+    font-weight: 600;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .cell {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+  }
+  .cell.hero-cell {
+    border-color: color-mix(in srgb, var(--gold) 40%, var(--border));
+    background: color-mix(in srgb, var(--gold) 5%, var(--surface-2));
+  }
+  .cell .k {
+    font-size: 10.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    font-weight: 600;
+  }
+  .cell .v {
+    font-family: var(--mono);
+    font-size: 15.5px;
+    font-weight: 600;
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  .cell .n {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .note {
+    font-size: 12.5px;
+    color: var(--text-dim);
+    line-height: 1.55;
+    margin: 8px 0;
+  }
+  .warn {
+    border: 1px solid var(--mid-bd);
+    background: var(--mid-bg);
+    border-radius: var(--radius-md);
+    padding: 10px 13px;
+    font-size: 12.5px;
+    color: var(--mid-fg);
+    margin: 10px 0;
+    line-height: 1.5;
+  }
+  .ctl {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin-bottom: 10px;
+  }
+  .ctl label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+  .ctl label.row {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 6px;
+    cursor: pointer;
+  }
+  .preset-row {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .preset-btn {
+    font: 500 11px var(--mono);
+    padding: 3px 9px;
+    border-radius: 99px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  .preset-btn:hover, .preset-btn.on {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--gold-tint);
+  }
+
+  /* Visual Return Breakdown Bar in Calculator */
+  .ret-stack-wrap {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+  .ret-stack-bar {
+    height: 10px;
+    border-radius: 99px;
+    overflow: hidden;
+    display: flex;
+    background: var(--surface-3);
+    margin-bottom: 7px;
+  }
+  .ret-seg-prin { background: var(--blue); }
+  .ret-seg-cpn { background: var(--green); }
+  .ret-seg-cap { background: var(--gold); }
+  .ret-stack-leg {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+    color: var(--text-dim);
+  }
+
+  /* Cash-flow timeline SVG */
+  .cf-chart-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 10px 12px 6px;
+    margin-bottom: 8px;
+  }
+
+  .kv { width: 100%; border-collapse: collapse; }
+  .kv td {
+    padding: 7px 2px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .kv td:last-child {
+    text-align: right;
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .kv tr.tot td {
+    font-weight: 600;
+    font-size: 14.5px;
+    color: var(--gold);
+    border-top: 1px solid var(--border);
+  }
+
+  .mini th, .mini td { padding: 7.5px 9px; font-size: 12px; }
+  .mini {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .box {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--gold);
+    padding: 10px 18px;
+    border-radius: 99px;
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 80;
+    display: none;
+    max-width: 90vw;
+    box-shadow: 0 8px 30px rgba(0,0,0,.4);
+  }
+
+  dialog {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    width: min(520px, 94vw);
+    box-shadow: 0 20px 50px rgba(0,0,0,.5);
+  }
+  dialog::backdrop { background: var(--veil-dlg); backdrop-filter: blur(2px); }
+  dialog h2 { font-family: var(--serif); margin: 0 0 10px; font-size: 20px; }
+  dialog label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 10px 0;
+  }
+  dialog input { width: 100%; }
+  .tgt { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+  @media (max-width: 960px) {
+    .mkt-pulse { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 720px) {
+    body { padding: 14px 12px 70px; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .mkt-pulse { grid-template-columns: 1fr 1fr; }
+    header { flex-direction: column; align-items: flex-start; }
+    .stats { width: 100%; }
+    .stat { flex: 1 1 calc(50% - 8px); }
+  }
 
   /* ===== templates: html[data-template] swaps palette, type, shape and density ===== */
-  html[data-template="clean"]{--sans:"Inter",system-ui,-apple-system,sans-serif;--mono:"Inter",system-ui,sans-serif;--serif:"Inter",system-ui,sans-serif;}
-  html[data-template="clean"]{color-scheme:dark;--bg:#0A1024;--surface:#101A38;--surface-2:#16224A;--border:#263563;--border-soft:#1D2A52;--text:#E8EDFB;--text-dim:#A5B2D8;--text-faint:#8593BE;--gold:#7F9BFF;--gold-dim:#3A4FA6;--gold-hover:#9DB2FF;--gold-tint:rgba(127,155,255,.13);--on-gold:#0A1024;--row-hover:rgba(127,155,255,.08);--green:#34D399;--red:#FB7185;--blue:#7F9BFF;--orange:#FBBF24;--violet:#B7A8FF;--veil:rgba(3,6,18,.66);--veil-dlg:rgba(3,6,18,.74);}
-  @media (prefers-color-scheme:light){ html[data-template="clean"]:not([data-theme="dark"]){color-scheme:light;--bg:#EEF2FC;--surface:#FFFFFF;--surface-2:#F5F7FD;--border:#D8E0F4;--border-soft:#E8EDF9;--text:#0B1530;--text-dim:#3B4C75;--text-faint:#52628A;--gold:#1C3FC4;--gold-dim:#A9B9EE;--gold-hover:#152F9C;--gold-tint:rgba(28,63,196,.08);--on-gold:#FFFFFF;--row-hover:#EBF0FC;--green:#0B7A4B;--red:#C42B2B;--blue:#1C3FC4;--orange:#B45309;--violet:#6D4FD8;--veil:rgba(11,21,48,.4);--veil-dlg:rgba(11,21,48,.5);} }
-  html[data-template="clean"][data-theme="light"]{color-scheme:light;--bg:#EEF2FC;--surface:#FFFFFF;--surface-2:#F5F7FD;--border:#D8E0F4;--border-soft:#E8EDF9;--text:#0B1530;--text-dim:#3B4C75;--text-faint:#52628A;--gold:#1C3FC4;--gold-dim:#A9B9EE;--gold-hover:#152F9C;--gold-tint:rgba(28,63,196,.08);--on-gold:#FFFFFF;--row-hover:#EBF0FC;--green:#0B7A4B;--red:#C42B2B;--blue:#1C3FC4;--orange:#B45309;--violet:#6D4FD8;--veil:rgba(11,21,48,.4);--veil-dlg:rgba(11,21,48,.5);}
-  /* every other colour is derived from the core palette, so a template only names 14 values */
-  html[data-template]:not([data-template="midnight"]){
-    --hi-fg:var(--green);--hi-bd:color-mix(in srgb,var(--green) 40%,transparent);--hi-bg:color-mix(in srgb,var(--green) 10%,transparent);
-    --mid-fg:var(--orange);--mid-bd:color-mix(in srgb,var(--orange) 40%,transparent);--mid-bg:color-mix(in srgb,var(--orange) 10%,transparent);
-    --lo-fg:var(--red);--lo-bd:color-mix(in srgb,var(--red) 40%,transparent);--lo-bg:color-mix(in srgb,var(--red) 10%,transparent);
-    --sh-fg:var(--orange);--sh-bd:color-mix(in srgb,var(--orange) 40%,transparent);--sh-bg:color-mix(in srgb,var(--orange) 10%,transparent);
-    --me-fg:var(--blue);--me-bd:color-mix(in srgb,var(--blue) 40%,transparent);--me-bg:color-mix(in srgb,var(--blue) 10%,transparent);
-    --lg-fg:var(--violet);--lg-bd:color-mix(in srgb,var(--violet) 40%,transparent);--lg-bg:color-mix(in srgb,var(--violet) 10%,transparent);
-    --buy-bg:color-mix(in srgb,var(--green) 14%,transparent);--buy-bd:color-mix(in srgb,var(--green) 45%,transparent);--buy-fg:var(--green);
-    --sell-bg:color-mix(in srgb,var(--red) 14%,transparent);--sell-bd:color-mix(in srgb,var(--red) 45%,transparent);--sell-fg:var(--red);
-    --kite-bg:color-mix(in srgb,var(--blue) 16%,transparent);--kite-bd:color-mix(in srgb,var(--blue) 50%,transparent);--kite-fg:var(--blue);
-    --bad-bd:color-mix(in srgb,var(--red) 45%,transparent);--bad-fg:var(--red);--bad-bg:color-mix(in srgb,var(--red) 8%,transparent);
+  html[data-template="clean"] {
+    --sans: "Inter", system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", "Inter", system-ui, monospace;
+    --serif: "Inter", system-ui, sans-serif;
+    color-scheme: dark;
+    --bg: #080E20;
+    --surface: #0F1832;
+    --surface-2: #152144;
+    --surface-3: #1C2B57;
+    --border: #243464;
+    --border-soft: #1A274D;
+    --text: #EBF0FF;
+    --text-dim: #A3B1D9;
+    --text-faint: #7E8DB8;
+    --gold: #7C9BFF;
+    --gold-dim: #3B52A8;
+    --gold-hover: #9BB3FF;
+    --gold-tint: rgba(124,155,255,.13);
+    --on-gold: #080E20;
+    --row-hover: rgba(124,155,255,.08);
+    --green: #34D399;
+    --red: #FB7185;
+    --blue: #38BDF8;
+    --orange: #FBBF24;
+    --violet: #B7A8FF;
+    --veil: rgba(4,7,18,.66);
+    --veil-dlg: rgba(4,7,18,.74);
   }
-  html[data-template]:not([data-template="midnight"]) .num{font-variant-numeric:tabular-nums}
+  @media (prefers-color-scheme:light) {
+    html[data-template="clean"]:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #EEF2FC;
+      --surface: #FFFFFF;
+      --surface-2: #F4F7FD;
+      --surface-3: #E6ECF9;
+      --border: #D6DFF4;
+      --border-soft: #E7ECF8;
+      --text: #0B1530;
+      --text-dim: #3D4E78;
+      --text-faint: #64749C;
+      --gold: #1D44C8;
+      --gold-dim: #A6B7EE;
+      --gold-hover: #15339E;
+      --gold-tint: rgba(29,68,200,.08);
+      --on-gold: #FFFFFF;
+      --row-hover: #EBF0FC;
+      --green: #0B7A4B;
+      --red: #C42B2B;
+      --blue: #0284C7;
+      --orange: #D97706;
+      --violet: #6D4FD8;
+      --veil: rgba(11,21,48,.4);
+      --veil-dlg: rgba(11,21,48,.5);
+    }
+  }
+  html[data-template="clean"][data-theme="light"] {
+    color-scheme: light;
+    --bg: #EEF2FC;
+    --surface: #FFFFFF;
+    --surface-2: #F4F7FD;
+    --surface-3: #E6ECF9;
+    --border: #D6DFF4;
+    --border-soft: #E7ECF8;
+    --text: #0B1530;
+    --text-dim: #3D4E78;
+    --text-faint: #64749C;
+    --gold: #1D44C8;
+    --gold-dim: #A6B7EE;
+    --gold-hover: #15339E;
+    --gold-tint: rgba(29,68,200,.08);
+    --on-gold: #FFFFFF;
+    --row-hover: #EBF0FC;
+    --green: #0B7A4B;
+    --red: #C42B2B;
+    --blue: #0284C7;
+    --orange: #D97706;
+    --violet: #6D4FD8;
+    --veil: rgba(11,21,48,.4);
+    --veil-dlg: rgba(11,21,48,.5);
+  }
+
+  /* every other colour is derived from the core palette */
+  html[data-template]:not([data-template="midnight"]) {
+    --hi-fg: var(--green); --hi-bd: color-mix(in srgb, var(--green) 40%, transparent); --hi-bg: color-mix(in srgb, var(--green) 11%, transparent);
+    --mid-fg: var(--orange); --mid-bd: color-mix(in srgb, var(--orange) 40%, transparent); --mid-bg: color-mix(in srgb, var(--orange) 11%, transparent);
+    --lo-fg: var(--red); --lo-bd: color-mix(in srgb, var(--red) 40%, transparent); --lo-bg: color-mix(in srgb, var(--red) 11%, transparent);
+    --sh-fg: var(--orange); --sh-bd: color-mix(in srgb, var(--orange) 40%, transparent); --sh-bg: color-mix(in srgb, var(--orange) 11%, transparent);
+    --me-fg: var(--blue); --me-bd: color-mix(in srgb, var(--blue) 40%, transparent); --me-bg: color-mix(in srgb, var(--blue) 11%, transparent);
+    --lg-fg: var(--violet); --lg-bd: color-mix(in srgb, var(--violet) 40%, transparent); --lg-bg: color-mix(in srgb, var(--violet) 11%, transparent);
+    --buy-bg: color-mix(in srgb, var(--green) 15%, transparent); --buy-bd: color-mix(in srgb, var(--green) 45%, transparent); --buy-fg: var(--green);
+    --sell-bg: color-mix(in srgb, var(--red) 15%, transparent); --sell-bd: color-mix(in srgb, var(--red) 45%, transparent); --sell-fg: var(--red);
+    --kite-bg: color-mix(in srgb, var(--blue) 16%, transparent); --kite-bd: color-mix(in srgb, var(--blue) 50%, transparent); --kite-fg: var(--blue);
+    --bad-bd: color-mix(in srgb, var(--red) 45%, transparent); --bad-fg: var(--red); --bad-bg: color-mix(in srgb, var(--red) 9%, transparent);
+  }
+  html[data-template]:not([data-template="midnight"]) .num { font-variant-numeric: tabular-nums; }
 
   /* ---- Ledger: ruled paper, ink and a red margin rule ---- */
+  html[data-template="ledger"] {
+    --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+    --sans: "Inter", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+    color-scheme: dark;
+    --bg: #101216;
+    --surface: #161920;
+    --surface-2: #1D212A;
+    --surface-3: #252A35;
+    --border: #2E3442;
+    --border-soft: #222733;
+    --text: #EFECE4;
+    --text-dim: #A4A096;
+    --text-faint: #78756C;
+    --gold: #D96B52;
+    --gold-dim: #8C4434;
+    --gold-hover: #E5816A;
+    --gold-tint: rgba(217,107,82,.12);
+    --on-gold: #FFFFFF;
+    --row-hover: rgba(217,107,82,.06);
+    --green: #4EBA7D;
+    --red: #E06252;
+    --blue: #7BA6D9;
+    --orange: #DE9E48;
+    --violet: #B392DE;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+  }
+  @media (prefers-color-scheme:light) {
+    html[data-template="ledger"]:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #F3EFE4;
+      --surface: #FCF9F2;
+      --surface-2: #F2EDE1;
+      --surface-3: #E6DFD0;
+      --border: #D6CEBE;
+      --border-soft: #E5DEC8;
+      --text: #1B1916;
+      --text-dim: #57524A;
+      --text-faint: #827B70;
+      --gold: #B83A2A;
+      --gold-dim: #DCA096;
+      --gold-hover: #962C1E;
+      --gold-tint: rgba(184,58,42,.08);
+      --on-gold: #FFFFFF;
+      --row-hover: rgba(184,58,42,.05);
+      --green: #1A6E3F;
+      --red: #B83A2A;
+      --blue: #23538A;
+      --orange: #C05621;
+      --violet: #5D3D94;
+    }
+  }
+  html[data-template="ledger"][data-theme="light"] {
+    color-scheme: light;
+    --bg: #F3EFE4;
+    --surface: #FCF9F2;
+    --surface-2: #F2EDE1;
+    --surface-3: #E6DFD0;
+    --border: #D6CEBE;
+    --border-soft: #E5DEC8;
+    --text: #1B1916;
+    --text-dim: #57524A;
+    --text-faint: #827B70;
+    --gold: #B83A2A;
+    --gold-dim: #DCA096;
+    --gold-hover: #962C1E;
+    --gold-tint: rgba(184,58,42,.08);
+    --on-gold: #FFFFFF;
+    --row-hover: rgba(184,58,42,.05);
+    --green: #1A6E3F;
+    --red: #B83A2A;
+    --blue: #23538A;
+    --orange: #C05621;
+    --violet: #5D3D94;
+  }
+  html[data-template="ledger"] .scroll {
+    border-left: 4px double color-mix(in srgb, var(--gold) 55%, var(--border));
+  }
+  html[data-template="ledger"] .brand-mark {
+    font-family: var(--serif);
+    letter-spacing: -0.01em;
+  }
 
   /* ---- Clean: bright, airy, soft shadows, rounded ---- */
-  html[data-template="clean"] body{font-size:14.5px}
-  html[data-template="clean"] header{border-bottom:0;padding-bottom:6px}
-  html[data-template="clean"] .brand-mark{font:700 30px var(--sans);letter-spacing:-.03em}
-  html[data-template="clean"] .brand-mark span{font:500 15px var(--sans);font-style:normal;color:var(--text-faint);letter-spacing:0}
-  html[data-template="clean"] .brand-sub,html[data-template="clean"] .sub,html[data-template="clean"] .banner{font-family:var(--sans)}
-  html[data-template="clean"] .banner{border:0;border-radius:12px;background:var(--surface);box-shadow:0 1px 2px color-mix(in srgb,var(--text) 8%,transparent);font-size:13px}
-  html[data-template="clean"] .tabs{border-bottom:0;gap:6px;margin-bottom:16px}
-  html[data-template="clean"] .tab{border:0;border-radius:99px;padding:8px 18px;margin:0}
-  html[data-template="clean"] .tab.active{background:var(--gold);color:var(--on-gold)}
-  html[data-template="clean"] th,html[data-template="clean"] h3,html[data-template="clean"] .stat-label,html[data-template="clean"] .cell .k{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500}
-  html[data-template="clean"] th{background:transparent;padding:14px 14px;border-bottom:1px solid var(--border)}
-  html[data-template="clean"] td{padding:15px 14px;border-bottom:1px solid var(--border-soft)}
-  html[data-template="clean"] .scroll{border:0;border-radius:16px;box-shadow:0 1px 2px color-mix(in srgb,var(--text) 6%,transparent),0 12px 32px color-mix(in srgb,var(--text) 7%,transparent)}
-  html[data-template="clean"] .cell,html[data-template="clean"] .warn,html[data-template="clean"] .mini,html[data-template="clean"] .box,html[data-template="clean"] .paystrip{border-radius:12px}
-  html[data-template="clean"] select,html[data-template="clean"] input,html[data-template="clean"] .btn{border-radius:10px}
-  html[data-template="clean"] .pill,html[data-template="clean"] .chip{text-transform:lowercase;display:inline-block;border-radius:99px;font-family:var(--sans);font-weight:500;letter-spacing:0}
-  html[data-template="clean"] .pill::first-letter,html[data-template="clean"] .chip::first-letter{text-transform:uppercase}
-  html[data-template="clean"] .drawer{border-radius:20px 0 0 20px}
-  html[data-template="clean"] dialog{border-radius:18px}
+  html[data-template="clean"] body { font-size: 13.5px; }
+  html[data-template="clean"] header { border-bottom: 0; padding-bottom: 6px; }
+  html[data-template="clean"] .brand-mark { font: 700 28px var(--sans); letter-spacing: -.03em; }
+  html[data-template="clean"] .brand-mark span { font: 500 15px var(--sans); font-style: normal; color: var(--text-faint); letter-spacing: 0; }
+  html[data-template="clean"] .brand-sub, html[data-template="clean"] .sub, html[data-template="clean"] .banner { font-family: var(--sans); }
+  html[data-template="clean"] .banner {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    font-size: 12.5px;
+  }
+  html[data-template="clean"] .nav-bar { border-bottom: 0; margin-bottom: 10px; }
+  html[data-template="clean"] .tabs { gap: 6px; }
+  html[data-template="clean"] .tab { border: 0; border-radius: 99px; padding: 7px 15px; margin: 0; }
+  html[data-template="clean"] .tab.active { background: var(--gold); color: var(--on-gold); }
+  html[data-template="clean"] .tab.active .tab-cnt { background: rgba(0,0,0,.18); color: var(--on-gold); border-color: transparent; }
+  html[data-template="clean"] th, html[data-template="clean"] h3, html[data-template="clean"] .stat-label, html[data-template="clean"] .cell .k, html[data-template="clean"] .pulse-k {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11.5px;
+    font-weight: 500;
+  }
+  html[data-template="clean"] thead th { padding: 11px 9px; border-bottom: 1px solid var(--border); }
+  html[data-template="clean"] td { padding: 11px 9px; border-bottom: 1px solid var(--border-soft); }
+  html[data-template="clean"] .scroll { border-radius: 16px; }
+  html[data-template="clean"] .cell, html[data-template="clean"] .warn, html[data-template="clean"] .mini, html[data-template="clean"] .box, html[data-template="clean"] .paystrip, html[data-template="clean"] .pulse-card { border-radius: 12px; }
+  html[data-template="clean"] select, html[data-template="clean"] input, html[data-template="clean"] .btn { border-radius: 9px; }
+  html[data-template="clean"] .pill, html[data-template="clean"] .chip {
+    text-transform: lowercase;
+    display: inline-flex;
+    border-radius: 99px;
+    font-family: var(--sans);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+  html[data-template="clean"] .pill::first-letter, html[data-template="clean"] .chip::first-letter { text-transform: uppercase; }
+  html[data-template="clean"] .drawer { border-radius: 20px 0 0 20px; }
+  html[data-template="clean"] dialog { border-radius: 18px; }
 
   /* ---- Terminal: dense, monospace, square ---- */
+  html[data-template="terminal"] {
+    --sans: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --serif: "JetBrains Mono", ui-monospace, monospace;
+    color-scheme: dark;
+    --bg: #05070A;
+    --surface: #0A0E14;
+    --surface-2: #101620;
+    --surface-3: #18202E;
+    --border: #1F2A3C;
+    --border-soft: #141C28;
+    --text: #E2E8F0;
+    --text-dim: #8B9BB4;
+    --text-faint: #5B6B84;
+    --gold: #F59E0B;
+    --gold-dim: #925E06;
+    --gold-hover: #FBBF24;
+    --gold-tint: rgba(245,158,11,.12);
+    --on-gold: #05070A;
+    --row-hover: rgba(245,158,11,.07);
+    --green: #10B981;
+    --red: #F43F5E;
+    --blue: #38BDF8;
+    --orange: #F59E0B;
+    --violet: #A78BFA;
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-lg: 4px;
+    --shadow-card: none;
+  }
+  @media (prefers-color-scheme:light) {
+    html[data-template="terminal"]:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #ECEFF4;
+      --surface: #FFFFFF;
+      --surface-2: #E5E9F0;
+      --surface-3: #D8DEE9;
+      --border: #C4CDD9;
+      --border-soft: #DCE2EC;
+      --text: #0F172A;
+      --text-dim: #475569;
+      --text-faint: #64748B;
+      --gold: #D97706;
+      --gold-dim: #F59E0B;
+      --gold-hover: #B45309;
+      --gold-tint: rgba(217,119,6,.10);
+      --on-gold: #FFFFFF;
+      --row-hover: rgba(217,119,6,.06);
+      --green: #059669;
+      --red: #E11D48;
+      --blue: #0284C7;
+      --orange: #D97706;
+      --violet: #7C3AED;
+    }
+  }
+  html[data-template="terminal"][data-theme="light"] {
+    color-scheme: light;
+    --bg: #ECEFF4;
+    --surface: #FFFFFF;
+    --surface-2: #E5E9F0;
+    --surface-3: #D8DEE9;
+    --border: #C4CDD9;
+    --border-soft: #DCE2EC;
+    --text: #0F172A;
+    --text-dim: #475569;
+    --text-faint: #64748B;
+    --gold: #D97706;
+    --gold-dim: #F59E0B;
+    --gold-hover: #B45309;
+    --gold-tint: rgba(217,119,6,.10);
+    --on-gold: #FFFFFF;
+    --row-hover: rgba(217,119,6,.06);
+    --green: #059669;
+    --red: #E11D48;
+    --blue: #0284C7;
+    --orange: #D97706;
+    --violet: #7C3AED;
+  }
+  html[data-template="terminal"] body { font-size: 12px; }
+  html[data-template="terminal"] td, html[data-template="terminal"] th { padding: 7px 8px; font-size: 11.5px; }
+  html[data-template="terminal"] .chip { border-radius: 3px; }
+  html[data-template="terminal"] .pill { border-radius: 2px; }
 
   /* ---- Soft: rounded, friendly, larger type ---- */
+  html[data-template="soft"] {
+    --sans: "Inter", system-ui, sans-serif;
+    --mono: "JetBrains Mono", monospace;
+    --serif: "Newsreader", Georgia, serif;
+    color-scheme: dark;
+    --bg: #141210;
+    --surface: #1D1A17;
+    --surface-2: #26221E;
+    --surface-3: #302B26;
+    --border: #38322C;
+    --border-soft: #2A2520;
+    --text: #F5EFE6;
+    --text-dim: #B5ABA0;
+    --text-faint: #877E74;
+    --gold: #E59866;
+    --gold-dim: #8F5B38;
+    --gold-hover: #F0AD80;
+    --gold-tint: rgba(229,152,102,.13);
+    --on-gold: #141210;
+    --row-hover: rgba(229,152,102,.07);
+    --green: #68C490;
+    --red: #E57368;
+    --blue: #82B1E0;
+    --orange: #E8B268;
+    --violet: #C2A3E3;
+    --radius-sm: 10px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+  }
+  @media (prefers-color-scheme:light) {
+    html[data-template="soft"]:not([data-theme="dark"]) {
+      color-scheme: light;
+      --bg: #FAF6F0;
+      --surface: #FFFFFF;
+      --surface-2: #F4EFE6;
+      --surface-3: #EAE2D6;
+      --border: #E2D9C8;
+      --border-soft: #EFE8DC;
+      --text: #241F1B;
+      --text-dim: #665D54;
+      --text-faint: #8F8479;
+      --gold: #C25E28;
+      --gold-dim: #E6B092;
+      --gold-hover: #A34B1B;
+      --gold-tint: rgba(194,94,40,.09);
+      --on-gold: #FFFFFF;
+      --row-hover: rgba(194,94,40,.05);
+      --green: #1F7A4C;
+      --red: #BA3B2E;
+      --blue: #2B629E;
+      --orange: #B86514;
+      --violet: #6B47A8;
+    }
+  }
+  html[data-template="soft"][data-theme="light"] {
+    color-scheme: light;
+    --bg: #FAF6F0;
+    --surface: #FFFFFF;
+    --surface-2: #F4EFE6;
+    --surface-3: #EAE2D6;
+    --border: #E2D9C8;
+    --border-soft: #EFE8DC;
+    --text: #241F1B;
+    --text-dim: #665D54;
+    --text-faint: #8F8479;
+    --gold: #C25E28;
+    --gold-dim: #E6B092;
+    --gold-hover: #A34B1B;
+    --gold-tint: rgba(194,94,40,.09);
+    --on-gold: #FFFFFF;
+    --row-hover: rgba(194,94,40,.05);
+    --green: #1F7A4C;
+    --red: #BA3B2E;
+    --blue: #2B629E;
+    --orange: #B86514;
+    --violet: #6B47A8;
+  }
 
   /* ratings stay in capitals (AAA, BBB) in every template */
-  html[data-template] .pill[class*=" r-"]{text-transform:none!important}
-  html[data-template] .pill[class*=" r-"]::first-letter{text-transform:none!important}
-
+  html[data-template] .pill[class*=" r-"] { text-transform: none !important; }
+  html[data-template] .pill[class*=" r-"]::first-letter { text-transform: none !important; }
 
   /* ---- fluid feel (Apple design rules): instant press feedback, reversible motion ---- */
-  html{touch-action:manipulation}
-  .btn,.chip,.tab,.linkbtn{transition:transform 90ms ease-out,background-color .15s,border-color .15s,color .15s}
-  .btn:active,.chip:active,.tab:active{transform:scale(.97)}
-  tbody tr.row:active{background:var(--gold-tint)}
-  .drawer{transition:transform .3s cubic-bezier(.22,1,.36,1);will-change:transform}
-  .veil{display:block;opacity:0;pointer-events:none;transition:opacity .3s cubic-bezier(.22,1,.36,1)}
-  .veil.open{opacity:1;pointer-events:auto}
-  dialog[open]{animation:materialize .2s cubic-bezier(.22,1,.36,1)}
-  @keyframes materialize{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
-  .dh h2,h2{letter-spacing:-.015em;line-height:1.2}
-  @media (pointer:coarse){.btn,.chip,.tab,select,input[type=text],input[type=number]{min-height:44px}}
-  @media (prefers-reduced-motion:reduce){
-    .drawer{transform:none;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility 0s .2s}
-    .drawer.open{opacity:1;visibility:visible;transition:opacity .2s ease}
-    dialog[open]{animation:none}
-    .btn:active,.chip:active,.tab:active{transform:none}
+  html { touch-action: manipulation; }
+  .btn, .chip, .tab, .linkbtn, .preset-btn {
+    transition: transform 90ms ease-out, background-color .15s, border-color .15s, color .15s;
+  }
+  .btn:active, .chip:active, .tab:active, .preset-btn:active { transform: scale(.97); }
+  tbody tr.row:active td { background: var(--gold-tint); }
+  dialog[open] { animation: materialize .2s cubic-bezier(.22,1,.36,1); }
+  @keyframes materialize { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+  @media (pointer:coarse) {
+    .btn, .chip, .tab, select, input[type=text], input[type=number] { min-height: 42px; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .drawer { transform: none; opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility 0s .2s; }
+    .drawer.open { opacity: 1; visibility: visible; transition: opacity .2s ease; }
+    dialog[open] { animation: none; }
+    .btn:active, .chip:active, .tab:active { transform: none; }
   }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div>
-      <div class="brand-mark">Ledger <span>— bond screener</span></div>
-      <div class="brand-sub" id="asOf">loading NSE data…</div>
+    <div class="brand-wrap">
+      <div class="brand-row">
+        <div class="brand-mark">Ledger <span>— bond screener</span></div>
+      </div>
+      <div class="status-row">
+        <span class="status-dot" id="statusDot"></span>
+        <div class="brand-sub" id="asOf">loading NSE data…</div>
+        <button class="btn btn-sm" id="demoBtn" style="display:none;padding:2px 8px;font-size:11px">Load sample NSE bonds</button>
+      </div>
     </div>
-    <div class="stats">
-      <div class="stat"><div class="stat-label">Theme</div><select id="theme" aria-label="Colour theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
-      <div class="stat"><div class="stat-label">Practice cash</div><div class="stat-value" id="stCash">₹0</div></div>
-      <div class="stat"><div class="stat-label">Portfolio value</div><div class="stat-value" id="stPort">₹0</div></div>
-      <div class="stat"><div class="stat-label">Total return</div><div class="stat-value gold" id="stRet">0.00%</div></div>
+    <div class="header-right">
+      <div class="stats">
+        <div class="stat ctrl-stat">
+          <div class="stat-label">Style</div>
+          <select id="tpl" aria-label="Visual template">
+            <option value="clean">Clean</option>
+            <option value="midnight">Midnight</option>
+            <option value="ledger">Ledger</option>
+            <option value="terminal">Terminal</option>
+            <option value="soft">Soft</option>
+          </select>
+        </div>
+        <div class="stat ctrl-stat">
+          <div class="stat-label">Theme</div>
+          <select id="theme" aria-label="Colour theme">
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Practice cash</div>
+          <div class="stat-value" id="stCash">₹0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Portfolio value</div>
+          <div class="stat-value" id="stPort">₹0</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Total return</div>
+          <div class="stat-value gold" id="stRet">0.00%</div>
+        </div>
+      </div>
     </div>
   </header>
 
   <div class="banner">
     <span><b>Decide here, trade on Kite.</b> Prices are from NSE’s public bond feed (last traded, else last close). Nothing here places a real order.</span>
     <span class="spacer"></span>
-    <button class="linkbtn" id="refreshBtn">Refresh from NSE</button>
-    <button class="linkbtn" id="importBtn" title="CSV with columns isin plus frequency (monthly, quarterly, semi-annual, annual) and/or security (senior secured, senior unsecured, subordinated, perpetual)">Import frequencies / seniority (CSV)</button>
-    <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
-    <button class="linkbtn" id="settingsBtn">Kite settings</button>
-    <button class="linkbtn" id="resetBtn">Reset practice account</button>
+    <div class="banner-actions">
+      <button class="linkbtn" id="refreshBtn">Refresh from NSE</button>
+      <button class="linkbtn" id="importBtn" title="CSV with columns isin plus frequency (monthly, quarterly, semi-annual, annual) and/or security (senior secured, senior unsecured, subordinated, perpetual)">Import frequencies / seniority (CSV)</button>
+      <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
+      <button class="linkbtn" id="exportBtn" title="Download the currently filtered bonds as a CSV spreadsheet">Export CSV</button>
+      <button class="linkbtn" id="settingsBtn">Kite settings</button>
+      <button class="linkbtn" id="resetBtn">Reset practice account</button>
+    </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" data-view="market">Market</button>
-    <button class="tab" data-view="portfolio">Portfolio</button>
-    <button class="tab" data-view="orders">Orders</button>
+  <div class="nav-bar">
+    <div class="tabs">
+      <button class="tab active" data-view="market">Market <span class="tab-cnt" id="cMarket">0</span></button>
+      <button class="tab" data-view="portfolio">Portfolio <span class="tab-cnt" id="cPort">0</span></button>
+      <button class="tab" data-view="orders">Orders <span class="tab-cnt" id="cOrders">0</span></button>
+    </div>
+    <div class="nav-tools" id="marketTools">
+      <button class="btn btn-sm" id="curveToggleBtn" title="Toggle interactive Yield vs. Maturity scatter chart">📈 Yield curve</button>
+    </div>
   </div>
 
   <div class="view active" id="view-market">
-    <div class="chips" id="terms"></div>
-    <div class="filters">
-      <input type="text" id="q" placeholder="Search name, symbol or ISIN" style="min-width:220px">
-      <select id="fType">
-        <option value="">All bond types</option>
-        <option value="GS">Government securities</option>
-        <option value="SDL">State development loans</option>
-        <option value="TB">Treasury bills</option>
-        <option value="CORP">Corporate &amp; PSU bonds</option>
-      </select>
-      <select id="fCat"><option value="">All issuers</option><option>Sovereign</option><option>State</option><option>PSU</option><option>Corporate</option></select>
-      <select id="fRating">
-        <option value="">All ratings</option><option value="SOV">Sovereign</option><option value="AAA">AAA</option>
-        <option value="AA">AA band (AA+ to AA-)</option><option value="A">A band and below</option><option value="NR">Not rated in feed</option>
-        <option value="AAup">AA- and above (incl. sovereign)</option>
-      </select>
-      <label class="dim" style="font-size:12px">Min yield <input type="number" id="minY" step="0.5" min="0" placeholder="%" style="width:70px"></label>
-      <select id="fLiq" title="Based on how many of the last 30 trading sessions the bond traded on NSE">
-        <option value="tradable" selected>Traded in last 30 sessions</option><option value="active">Active or liquid only</option>
-        <option value="liquid">Liquid only</option><option value="">Include bonds that never trade</option>
-      </select>
-      <select id="fSort">
-        <option value="ytm">Sort: Yield / CAGR (high to low)</option>
-        <option value="cpn">Sort: Coupon (high to low)</option>
-        <option value="mat">Sort: Maturity (soonest)</option>
-        <option value="matFar">Sort: Maturity (furthest)</option>
-        <option value="liq">Sort: Liquidity (days traded)</option>
-        <option value="val">Sort: Traded value today</option>
-        <option value="price">Sort: Price (low to high)</option>
-        <option value="name">Sort: Name (A to Z)</option>
-      </select>
-      <select id="fSec" title="Seniority is not in NSE’s feed. This filters on the ones you have confirmed.">
-        <option value="">Any seniority</option><option>Senior secured</option><option>Senior unsecured</option>
-        <option>Subordinated (Tier II)</option><option>Perpetual / AT1</option><option value="unset">Corporate, not confirmed</option>
-      </select>
-      <select id="fPay" title="How often interest is paid">
-        <option value="">Any payout schedule</option><option value="12">Monthly</option><option value="4">Quarterly</option>
-        <option value="2">Semi-annual</option><option value="1">Annual</option><option value="0">At maturity (no interest)</option>
-      </select>
-      <label class="chk" title="Hide bonds whose payment frequency is only assumed. Frequencies you set yourself count as confirmed."><input type="checkbox" id="fConf"> Confirmed payout schedule only</label>
-      <label class="chk"><input type="checkbox" id="fLive"> Traded today only</label>
-      <label class="chk" title="Amortising, part-redeemed and zero-coupon corporate bonds, where NSE’s data does not allow a reliable yield"><input type="checkbox" id="fFlag"> Include bonds with unreliable yield data</label>
+    <div class="mkt-pulse" id="mktPulse">
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Matching bonds</span></div>
+        <div class="pulse-v" id="pkCount">—</div>
+        <div class="pulse-sub" id="pkCountSub">Filtered universe</div>
+      </div>
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Median yield (CAGR)</span></div>
+        <div class="pulse-v gold" id="pkMedYtm">—</div>
+        <div class="pulse-sub" id="pkRangeYtm">Across matching bonds</div>
+      </div>
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Highest yield</span></div>
+        <div class="pulse-v" id="pkTopYtm">—</div>
+        <div class="pulse-sub" id="pkTopName">—</div>
+      </div>
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Active &amp; liquid</span></div>
+        <div class="pulse-v" id="pkLiq">—</div>
+        <div class="pulse-sub" id="pkLiqSub">Traded ≥5 of 30 sessions</div>
+      </div>
     </div>
-    <div class="meta" id="meta"></div>
+
+    <div class="curve-panel" id="curvePanel">
+      <div class="curve-head">
+        <div class="curve-title">
+          <span>Yield (CAGR) vs. Remaining Maturity</span>
+          <span class="sub">Click any point to inspect bond details</span>
+        </div>
+        <div class="curve-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--green)"></span>Sovereign / G-Sec</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--blue)"></span>PSU / State</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--orange)"></span>Corporate</span>
+        </div>
+      </div>
+      <div class="curve-wrap" id="curveWrap">
+        <svg class="curve-svg" id="curveSvg" viewBox="0 0 860 190" preserveAspectRatio="none"></svg>
+        <div class="curve-tip" id="curveTip"></div>
+      </div>
+    </div>
+
+    <div class="chips-bar">
+      <div class="chips" id="terms"></div>
+    </div>
+
+    <div class="filter-box">
+      <div class="filters-main">
+        <div class="search-wrap">
+          <span class="search-ico">⌕</span>
+          <input type="text" id="q" placeholder="Search issuer, symbol or ISIN…">
+          <span class="search-kbd" id="qKbd">/</span>
+          <button class="search-clr" id="qClr" title="Clear search">&times;</button>
+        </div>
+        <select id="fType" aria-label="Bond type">
+          <option value="">All bond types</option>
+          <option value="GS">Government securities</option>
+          <option value="SDL">State development loans</option>
+          <option value="TB">Treasury bills</option>
+          <option value="CORP">Corporate &amp; PSU bonds</option>
+        </select>
+        <select id="fCat" aria-label="Issuer category">
+          <option value="">All issuers</option>
+          <option>Sovereign</option>
+          <option>State</option>
+          <option>PSU</option>
+          <option>Corporate</option>
+        </select>
+        <select id="fRating" aria-label="Credit rating">
+          <option value="">All ratings</option>
+          <option value="SOV">Sovereign</option>
+          <option value="AAA">AAA</option>
+          <option value="AA">AA band (AA+ to AA-)</option>
+          <option value="A">A band and below</option>
+          <option value="NR">Not rated in feed</option>
+          <option value="AAup">AA- and above (incl. sovereign)</option>
+        </select>
+        <label class="f-item" title="Minimum annualised yield to maturity">
+          <span>Min yield</span>
+          <input type="number" id="minY" step="0.5" min="0" placeholder="%">
+        </label>
+        <select id="fLiq" title="Based on how many of the last 30 trading sessions the bond traded on NSE">
+          <option value="tradable" selected>Traded in last 30 sessions</option>
+          <option value="active">Active or liquid only</option>
+          <option value="liquid">Liquid only</option>
+          <option value="">Include bonds that never trade</option>
+        </select>
+        <select id="fSort" aria-label="Sort order">
+          <option value="ytm">Sort: Yield / CAGR (high → low)</option>
+          <option value="cpn">Sort: Coupon (high → low)</option>
+          <option value="mat">Sort: Maturity (soonest)</option>
+          <option value="matFar">Sort: Maturity (furthest)</option>
+          <option value="liq">Sort: Liquidity (days traded)</option>
+          <option value="val">Sort: Traded value today</option>
+          <option value="price">Sort: Price (low → high)</option>
+          <option value="name">Sort: Name (A → Z)</option>
+        </select>
+        <button class="btn btn-sm" id="advBtn" title="Show payout frequency, seniority and data quality filters">More filters <span id="advCnt" class="sub"></span></button>
+        <button class="btn btn-sm btn-ghost" id="clrFiltersBtn" style="display:none">Reset</button>
+      </div>
+
+      <div class="filters-adv" id="advFilters">
+        <select id="fPay" title="How often interest is paid">
+          <option value="">Any payout schedule</option>
+          <option value="12">Monthly</option>
+          <option value="4">Quarterly</option>
+          <option value="2">Semi-annual</option>
+          <option value="1">Annual</option>
+          <option value="0">At maturity (no interest)</option>
+        </select>
+        <select id="fSec" title="Seniority is not in NSE’s feed. This filters on the ones you have confirmed.">
+          <option value="">Any seniority</option>
+          <option>Senior secured</option>
+          <option>Senior unsecured</option>
+          <option>Subordinated (Tier II)</option>
+          <option>Perpetual / AT1</option>
+          <option value="unset">Corporate, not confirmed</option>
+        </select>
+        <label class="chk" title="Hide bonds whose payment frequency is only assumed. Frequencies you set yourself count as confirmed.">
+          <input type="checkbox" id="fConf"> Confirmed payout schedule only
+        </label>
+        <label class="chk">
+          <input type="checkbox" id="fLive"> Traded today only
+        </label>
+        <label class="chk" title="Amortising, part-redeemed and zero-coupon corporate bonds, where NSE’s data does not allow a reliable yield">
+          <input type="checkbox" id="fFlag"> Include bonds with unreliable yield data
+        </label>
+      </div>
+    </div>
+
+    <div class="meta-bar">
+      <div class="meta" id="meta"></div>
+    </div>
+
     <div class="scroll">
       <table>
-        <thead><tr>
-          <th class="l">Bond</th><th>Term</th><th>Rating</th><th>Issuer type</th><th>Coupon · payout</th><th>Price</th><th>Day Δ</th>
-          <th title="Annualised return if bought now and held to maturity, with accrued interest included">Yield (CAGR)</th>
-          <th>Current yield</th><th>Maturity</th><th>Left</th><th title="How often it traded on NSE in the last 30 sessions">Liquidity</th><th title="Traded value on NSE today">Traded ₹</th><th></th>
-        </tr></thead>
+        <thead>
+          <tr>
+            <th class="l sticky-col sortable" data-sort="name">Bond <span class="sort-arr" data-arr="name"></span></th>
+            <th>Term</th>
+            <th>Rating</th>
+            <th>Issuer type</th>
+            <th class="sortable" data-sort="cpn">Coupon · payout <span class="sort-arr" data-arr="cpn"></span></th>
+            <th class="sortable" data-sort="price">Price <span class="sort-arr" data-arr="price"></span></th>
+            <th>Day Δ</th>
+            <th class="sortable" data-sort="ytm" title="Annualised return if bought now and held to maturity, with accrued interest included">Yield (CAGR) <span class="sort-arr" data-arr="ytm"></span></th>
+            <th>Current yield</th>
+            <th class="sortable" data-sort="mat">Maturity <span class="sort-arr" data-arr="mat"></span></th>
+            <th>Left</th>
+            <th class="sortable" data-sort="liq" title="How often it traded on NSE in the last 30 sessions">Liquidity <span class="sort-arr" data-arr="liq"></span></th>
+            <th class="sortable" data-sort="val" title="Traded value on NSE today">Traded ₹ <span class="sort-arr" data-arr="val"></span></th>
+            <th></th>
+          </tr>
+        </thead>
         <tbody id="rows"></tbody>
       </table>
       <div class="empty" id="empty" style="display:none">No bonds match these filters.</div>
@@ -332,13 +1821,68 @@
     </div>
   </div>
 
-  <div class="view" id="view-portfolio"><div class="scroll"><table>
-    <thead><tr><th class="l">Bond</th><th>Qty</th><th>Avg cost</th><th>Current price</th><th>Market value</th><th>Unrealized P&amp;L</th><th>P&amp;L %</th><th></th></tr></thead>
-    <tbody id="pRows"></tbody></table><div class="empty" id="pEmpty">No open positions. Open a bond and use Practice buy.</div></div></div>
+  <div class="view" id="view-portfolio">
+    <div class="mkt-pulse" id="portPulse" style="margin-bottom:12px">
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Open positions</span></div>
+        <div class="pulse-v" id="ppCount">0</div>
+        <div class="pulse-sub" id="ppUnits">0 units held</div>
+      </div>
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Invested cost</span></div>
+        <div class="pulse-v" id="ppCost">₹0</div>
+        <div class="pulse-sub">Average cost basis</div>
+      </div>
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Market value</span></div>
+        <div class="pulse-v" id="ppVal">₹0</div>
+        <div class="pulse-sub">At latest NSE prices</div>
+      </div>
+      <div class="pulse-card">
+        <div class="pulse-k"><span>Unrealized P&amp;L</span></div>
+        <div class="pulse-v" id="ppPnl">₹0</div>
+        <div class="pulse-sub" id="ppPnlPct">0.00% on invested</div>
+      </div>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="l sticky-col">Bond</th>
+            <th>Qty</th>
+            <th>Avg cost</th>
+            <th>Current price</th>
+            <th>Market value</th>
+            <th>Unrealized P&amp;L</th>
+            <th>P&amp;L %</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="pRows"></tbody>
+      </table>
+      <div class="empty" id="pEmpty">No open positions. Open a bond in the Market tab and use Practice buy.</div>
+    </div>
+  </div>
 
-  <div class="view" id="view-orders"><div class="scroll"><table>
-    <thead><tr><th class="l">Date</th><th class="l">Bond</th><th>Type</th><th>Qty</th><th>Price</th><th>Amount</th><th>Realized P&amp;L</th></tr></thead>
-    <tbody id="oRows"></tbody></table><div class="empty" id="oEmpty">No orders yet.</div></div></div>
+  <div class="view" id="view-orders">
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="l">Date</th>
+            <th class="l">Bond</th>
+            <th>Type</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Amount</th>
+            <th>Realized P&amp;L</th>
+          </tr>
+        </thead>
+        <tbody id="oRows"></tbody>
+      </table>
+      <div class="empty" id="oEmpty">No orders yet.</div>
+    </div>
+  </div>
 </div>
 
 <div class="veil" id="veil"></div>
@@ -362,17 +1906,20 @@
 <script>
 (function(){
 const START = 1000000, TDS = 0.10;
-const KEY = {theme:'ledger3_theme', pos:'ledger3_pos', ord:'ledger3_ord', cash:'ledger3_cash', amt:'ledger3_amt', kite:'ledger3_kite', freq:'ledger3_freq', sec:'ledger3_sec'};
+const KEY = {
+  theme:'ledger3_theme', tpl:'ledger3_tpl', pos:'ledger3_pos', ord:'ledger3_ord',
+  cash:'ledger3_cash', amt:'ledger3_amt', kite:'ledger3_kite', freq:'ledger3_freq', sec:'ledger3_sec'
+};
 const RANKS = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-'];
 const $ = id => document.getElementById(id);
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
-let bonds = [], byId = {}, meta = {};
+let bonds = [], byId = {}, meta = {}, isDemo = false;
 let positions = store.get(KEY.pos, {}), orders = store.get(KEY.ord, []), cash = store.get(KEY.cash, START);
 let defAmt = store.get(KEY.amt, 100000), kiteKey = store.get(KEY.kite, '');
-let term = '', shown = 100;
+let term = '', shown = 100, curveOpen = false;
 let freqOv = store.get(KEY.freq, {});
 let secOv = store.get(KEY.sec, {});
 const SEC = {
@@ -383,6 +1930,40 @@ const SEC = {
 };
 const SEC_WORDS = [[/perpetual|at1|additional tier/, 'Perpetual / AT1'], [/subordinat|tier ?(ii|2)/, 'Subordinated (Tier II)'], [/unsecured/, 'Senior unsecured'], [/secured/, 'Senior secured']];
 const secFromWord = w => (SEC_WORDS.find(([re]) => re.test(String(w || '').toLowerCase())) || [])[1];
+
+// Offline demo dataset when server.py is not running
+const SAMPLE_ABOUT = {
+  "RECLTD": "Government-owned financier of India's power sector, formerly Rural Electrification Corporation. A subsidiary of Power Finance Corporation.",
+  "POWERFINANCECORPORATION": "Government-owned financier of India's power sector. Lends to state electricity utilities and power projects.",
+  "INDIANRAILWAYFINANCECORPORATION": "Government-owned company that raises money to fund Indian Railways' rolling stock and projects. Its bonds are widely held by institutions.",
+  "NATIONALHIGHWAYSAUTHORITYOFINDIA": "Government body that builds and maintains India's national highways. Its bonds carry strong government backing.",
+  "NATIONALBANKFORAGRICULTUREANDRURALDEVELOPMENT": "Government-owned development bank for agriculture and rural India (NABARD).",
+  "SHRIRAMFINANCE": "Large non-bank lender in the Shriram group, a leader in used commercial-vehicle finance.",
+  "MUTHOOTFINANCE": "One of India's largest gold-loan companies. Also sells retail NCDs, often with monthly-interest options.",
+  "TATACAPITALHOUSINGFINANCE": "Housing-finance subsidiary of Tata Capital (Tata Group): home loans and loans against property.",
+  "CHOLAMANDALAMINVESTMENTFINANCECO": "Large non-bank lender in the Murugappa Group: vehicle finance, home loans and loans against property.",
+  "LTFINANCE": "Non-bank lender in the Larsen & Toubro group, focused on retail loans such as rural, two-wheeler, home and personal.",
+  "STATEBANKOFINDIA": "India's largest bank, majority-owned by the Government of India.",
+  "NATIONALTHERMALPOWERCORPORATION": "India's largest power generator (NTPC), majority-owned by the Government of India."
+};
+const SAMPLE_BONDS = [
+  {sym:"718GS2033",isin:"IN0020230085",series:"GS",name:"GOI 7.18% 2033",kind:"GS",cat:"Sovereign",face:100,price:101.42,src:"live",chg:0.12,cpn:7.18,mat:"2033-08-14",matApprox:false,rating:"SOV",agency:null,qty:48500,val:4918870,hi:101.55,lo:101.20,freq:2,liq:{days:28,turnover:142000000,trades:612,last:"2026-10-13",sessions:30}},
+  {sym:"726GS2029",isin:"IN0020220037",series:"GS",name:"GOI 7.26% 2029",kind:"GS",cat:"Sovereign",face:100,price:101.18,src:"live",chg:0.05,cpn:7.26,mat:"2029-01-14",matApprox:false,rating:"SOV",agency:null,qty:32100,val:3247878,hi:101.25,lo:101.05,freq:2,liq:{days:26,turnover:98500000,trades:410,last:"2026-10-13",sessions:30}},
+  {sym:"364D150427",isin:"IN002026Z012",series:"TB",name:"T-Bill 364d",kind:"TB",cat:"Sovereign",face:100,price:96.78,src:"live",chg:0.02,cpn:0,mat:"2027-04-15",matApprox:false,rating:"SOV",agency:null,qty:25000,val:2419500,hi:96.80,lo:96.72,freq:2,liq:{days:22,turnover:64000000,trades:195,last:"2026-10-13",sessions:30}},
+  {sym:"795NHAI29",isin:"INE906B07FG1",series:"N2",name:"NHAI",issuer:"NATIONAL HIGHWAYS AUTHORITY OF INDIA",issueDesc:"NHAI 7.95% 2029 Tax-Free Secured",secHint:null,kind:"CORP",cat:"PSU",face:1000,price:1038.50,src:"live",chg:0.18,cpn:7.95,mat:"2029-02-18",matApprox:false,rating:"AAA",agency:"CRISIL, ICRA",qty:4200,val:4361700,hi:1040.0,lo:1035.0,freq:1,fObs:1,fObsDates:["2025-02-18","2026-02-18"],liq:{days:25,turnover:89200000,trades:540,last:"2026-10-13",sessions:30}},
+  {sym:"782REC31",isin:"INE020B08DW4",series:"N1",name:"REC",issuer:"REC LTD",issueDesc:"REC Limited 7.82% 2031 Sr XII",kind:"CORP",cat:"PSU",face:1000,price:1008.20,src:"live",chg:-0.08,cpn:7.82,mat:"2031-06-30",matApprox:false,rating:"AAA",agency:"CRISIL, CARE",qty:3150,val:3175830,hi:1010.0,lo:1006.5,freq:1,fObs:1,fObsDates:["2025-06-30","2026-06-30"],liq:{days:24,turnover:71400000,trades:380,last:"2026-10-13",sessions:30}},
+  {sym:"775PFC28",isin:"INE134E08LD9",series:"N3",name:"PFC",issuer:"POWER FINANCE CORPORATION LIMITED",issueDesc:"PFC 7.75% 2028 Secured NCD",kind:"CORP",cat:"PSU",face:1000,price:1004.10,src:"live",chg:0.04,cpn:7.75,mat:"2028-05-15",matApprox:false,rating:"AAA",agency:"CRISIL, ICRA",qty:2890,val:2901849,hi:1005.0,lo:1002.0,freq:1,fObs:1,fObsDates:["2025-05-15","2026-05-15"],liq:{days:21,turnover:52800000,trades:312,last:"2026-10-13",sessions:30}},
+  {sym:"768IRFC30",isin:"INE053F07BM8",series:"N5",name:"IRFC",issuer:"INDIAN RAILWAY FINANCE CORPORATION",issueDesc:"IRFC 7.68% 2030 Secured Bonds",kind:"CORP",cat:"PSU",face:1000,price:1006.00,src:"live",chg:0.15,cpn:7.68,mat:"2030-03-22",matApprox:false,rating:"AAA",agency:"CRISIL",qty:3600,val:3621600,hi:1007.0,lo:1004.0,freq:1,fObs:1,fObsDates:["2025-03-22","2026-03-22"],liq:{days:23,turnover:68100000,trades:428,last:"2026-10-13",sessions:30}},
+  {sym:"762NABARD27",isin:"INE261F08DS1",series:"N1",name:"NABARD",issuer:"National Bank for Agriculture and Rural Development",issueDesc:"NABARD 7.62% 2027 Sr 24B",kind:"CORP",cat:"PSU",face:1000,price:1001.40,src:"live",chg:0.01,cpn:7.62,mat:"2027-07-10",matApprox:false,rating:"AAA",agency:"ICRA",qty:1900,val:1902660,hi:1002.0,lo:1000.5,freq:1,fFile:1,liq:{days:18,turnover:39500000,trades:210,last:"2026-10-13",sessions:30}},
+  {sym:"915SHRIRAM28",isin:"INE721A07RN5",series:"N8",name:"SHRIRAM",issuer:"Shriram Finance Limited",issueDesc:"Shriram Finance 9.15% 2028 Monthly Senior Secured",kind:"CORP",cat:"Corporate",face:1000,price:1012.75,src:"live",chg:0.24,cpn:9.15,mat:"2028-11-20",matApprox:false,rating:"AA+",agency:"CRISIL, IND-RA",qty:5400,val:5468850,hi:1015.0,lo:1010.0,freq:12,fObs:12,fObsDates:["2026-07-20","2026-08-20","2026-09-20"],liq:{days:27,turnover:94300000,trades:780,last:"2026-10-13",sessions:30}},
+  {sym:"890MUTHOOT27",isin:"INE414G07HS2",series:"N4",name:"MUTHOOT",issuer:"Muthoot Finance Limited",issueDesc:"Muthoot Finance 8.90% 2027 Secured NCD",kind:"CORP",cat:"Corporate",face:1000,price:1005.60,src:"live",chg:-0.05,cpn:8.90,mat:"2027-08-25",matApprox:false,rating:"AA+",agency:"ICRA",qty:3800,val:3821280,hi:1007.0,lo:1004.0,freq:12,fObs:12,fObsDates:["2026-07-25","2026-08-25","2026-09-25"],liq:{days:22,turnover:61200000,trades:515,last:"2026-10-13",sessions:30}},
+  {sym:"835TCHFL29",isin:"INE033L07HV9",series:"N2",name:"TCHFL",issuer:"TATA CAPITAL HOUSING FINANCE LTD",issueDesc:"Tata Capital Housing 8.35% 2029 Secured",kind:"CORP",cat:"Corporate",face:1000,price:1009.40,src:"live",chg:0.09,cpn:8.35,mat:"2029-09-12",matApprox:false,rating:"AAA",agency:"CRISIL",qty:2100,val:2119740,hi:1010.5,lo:1008.0,freq:1,fObs:1,fObsDates:["2025-09-12","2026-09-12"],liq:{days:16,turnover:34800000,trades:240,last:"2026-10-13",sessions:30}},
+  {sym:"865CHOLA28",isin:"INE121A07QW1",series:"N6",name:"CHOLA",issuer:"CHOLAMANDALAM INVESTMENT & FINANCE CO. LTD.",issueDesc:"Cholamandalam Inv 8.65% 2028 Quarterly",kind:"CORP",cat:"Corporate",face:1000,price:1006.80,src:"close",chg:0.0,cpn:8.65,mat:"2028-04-18",matApprox:false,rating:"AA+",agency:"ICRA, CARE",qty:0,val:0,hi:null,lo:null,freq:4,fObs:4,fObsDates:["2026-04-18","2026-07-18"],liq:{days:12,turnover:22400000,trades:145,last:"2026-10-11",sessions:30}},
+  {sym:"828LTF27",isin:"INE027E07CB4",series:"N3",name:"LTF",issuer:"L&T Finance Limited",issueDesc:"L&T Finance 8.28% 2027 Senior Secured",kind:"CORP",cat:"Corporate",face:1000,price:1002.15,src:"live",chg:0.06,cpn:8.28,mat:"2027-05-04",matApprox:false,rating:"AAA",agency:"CRISIL",qty:1450,val:1453117,hi:1003.0,lo:1001.0,freq:1,fFile:1,liq:{days:15,turnover:28900000,trades:188,last:"2026-10-13",sessions:30}},
+  {sym:"810SBI34",isin:"INE062A08397",series:"N9",name:"SBI",issuer:"STATE BANK OF INDIA",issueDesc:"SBI 8.10% 2034 Tier 2 Subordinated",secHint:"Subordinated (Tier II)",kind:"CORP",cat:"PSU",face:1000,price:1018.90,src:"live",chg:0.21,cpn:8.10,mat:"2034-11-14",matApprox:false,rating:"AAA",agency:"CRISIL, ICRA",qty:2700,val:2751030,hi:1020.0,lo:1016.0,freq:1,fObs:1,fObsDates:["2025-11-14"],liq:{days:19,turnover:48600000,trades:260,last:"2026-10-13",sessions:30}},
+  {sym:"758SDL2031",isin:"IN2920210142",series:"SG",name:"Maharashtra State",kind:"SDL",cat:"State",face:100,price:100.85,src:"close",chg:0.0,cpn:7.58,mat:"2031-08-24",matApprox:false,rating:"SOV",agency:null,qty:0,val:0,hi:null,lo:null,freq:2,liq:{days:7,turnover:14200000,trades:62,last:"2026-10-10",sessions:30}},
+  {sym:"745NTPC32",isin:"INE733E07KL2",series:"N2",name:"NTPC",issuer:"NATIONAL THERMAL POWER CORPORATION LIMITED",issueDesc:"NTPC 7.45% 2032 Secured Bonds",kind:"CORP",cat:"PSU",face:1000,price:998.40,src:"live",chg:-0.03,cpn:7.45,mat:"2032-09-05",matApprox:false,rating:"AAA",agency:"CRISIL",qty:1820,val:1817088,hi:999.5,lo:997.5,freq:1,fObs:1,fObsDates:["2025-09-05","2026-09-05"],liq:{days:14,turnover:31000000,trades:172,last:"2026-10-13",sessions:30}}
+];
 
 // ---------- formatting / dates ----------
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -488,25 +2069,46 @@ function scenario(b, a, amt, tds, months, mode, custom){
 }
 
 // ---------- data ----------
+function ingestBonds(rawList){
+  bonds = rawList.map(x => ({...x}));
+  bonds.forEach(b => { b.id = b.isin; prep(b); });
+  issuerGroups = {};
+  bonds.forEach(b => { if (b.issuer) (issuerGroups[normIss(b.issuer)] ||= []).push(b); });
+  byId = Object.fromEntries(bonds.map(b => [b.id, b]));
+}
+function loadDemo(){
+  isDemo = true;
+  ABOUT = {...SAMPLE_ABOUT, ...ABOUT};
+  ingestBonds(SAMPLE_BONDS);
+  $('statusDot').className = 'status-dot demo';
+  $('asOf').textContent = `Sample NSE snapshot · ${bonds.length} representative Indian bonds (start server.py for live NSE feed)`;
+  $('demoBtn').style.display = 'none';
+  renderAll();
+}
 async function load(force){
+  $('statusDot').className = 'status-dot';
   $('asOf').textContent = force ? 'refreshing from NSE…' : 'loading NSE data…';
   try{
     const r = await fetch('/api/bonds' + (force ? '?refresh=1' : ''));
     const d = await r.json();
-    bonds = (d.bonds || []);
+    isDemo = false;
     meta = d;
-    bonds.forEach(b => { b.id = b.isin; prep(b); });
-    issuerGroups = {};
-    bonds.forEach(b => { if (b.issuer) (issuerGroups[normIss(b.issuer)] ||= []).push(b); });
+    ingestBonds(d.bonds || []);
     if (!Object.keys(ABOUT).length){
       try{ const a = await (await fetch('/about.json')).json(); ABOUT = Object.fromEntries(Object.entries(a.about || {}).map(([k, v]) => [normIss(k), v])); }catch(e){}
     }
-    byId = Object.fromEntries(bonds.map(b => [b.id, b]));
     const t = d.asOf ? new Date(d.asOf).toLocaleString('en-IN') : '';
+    $('statusDot').className = 'status-dot ' + (bonds.length ? 'ok' : 'err');
+    $('demoBtn').style.display = 'none';
     $('asOf').textContent = bonds.length ? `NSE · ${bonds.length.toLocaleString('en-IN')} bonds · fetched ${t}` + (d.error ? ' · last refresh failed, showing cached data' : '') + (d.observed ? ` · payout schedule confirmed for ${d.observed.toLocaleString('en-IN')} bonds` : '') + (d.payoutsRunning ? ' (still gathering payment history, refresh in a few minutes)' : '') : 'No data';
     if (!bonds.length) toast('No bond data: ' + (d.error || 'unknown error'));
   }catch(e){
-    $('asOf').textContent = 'Cannot reach the server. Start it with: python3 server.py';
+    $('statusDot').className = 'status-dot demo';
+    ABOUT = {...SAMPLE_ABOUT, ...ABOUT};
+    ingestBonds(SAMPLE_BONDS);
+    isDemo = true;
+    $('asOf').textContent = 'Offline sample mode (16 NSE bonds) · Start python3 server.py for live NSE feed';
+    $('demoBtn').style.display = 'none';
   }
   renderAll();
 }
@@ -514,6 +2116,15 @@ async function load(force){
 // ---------- market ----------
 function ratingGroup(b){ return b.rating === 'SOV' ? 'SOV' : !b.rating ? 'NR' : RANKS.indexOf(b.rating) <= 3 ? 'AA+' : 'A'; }
 let hiddenIlliquid = 0;
+function updateFilterUI(){
+  const q = $('q').value.trim();
+  $('qClr').style.display = q ? 'block' : 'none';
+  $('qKbd').style.display = q ? 'none' : 'block';
+  const advActive = ($('fPay').value ? 1 : 0) + ($('fSec').value ? 1 : 0) + ($('fConf').checked ? 1 : 0) + ($('fLive').checked ? 1 : 0) + ($('fFlag').checked ? 1 : 0);
+  $('advCnt').textContent = advActive ? `(${advActive})` : '';
+  const anyNonDefault = q || $('fType').value || $('fCat').value || $('fRating').value || $('minY').value || ($('fLiq').value !== 'tradable') || advActive || term;
+  $('clrFiltersBtn').style.display = anyNonDefault ? 'inline-flex' : 'none';
+}
 function filtered(skipTerm){
   hiddenIlliquid = 0;
   const q = $('q').value.trim().toLowerCase(), ty = $('fType').value, ca = $('fCat').value, ra = $('fRating').value;
@@ -546,7 +2157,7 @@ function filtered(skipTerm){
 const SORTS = {
   ytm: (a,b) => (b.a.ytm ?? -1e9) - (a.a.ytm ?? -1e9), cpn: (a,b) => b.cpn - a.cpn,
   mat: (a,b) => parse(a.mat) - parse(b.mat), matFar: (a,b) => parse(b.mat) - parse(a.mat),
-  liq: (a,b) => ((b.liq?.days ?? -1) - (a.liq?.days ?? -1)) || ((b.liq?.turnover ?? 0) - (a.liq?.turnover ?? 0)), val: (a,b) => b.val - a.val, price: (a,b) => a.price/a.face - b.price/b.face, name: (a,b) => a.name.localeCompare(b.name)
+  liq: (a,b) => ((b.liq?.days ?? -1) - (a.liq?.days ?? -1)) || ((b.liq?.turnover ?? 0) - (a.liq?.turnover ?? 0)), val: (a,b) => b.val - a.val, price: (a,b) => a.price/a.face - b.price/b.face, name: (a,b) => dispName(a).localeCompare(dispName(b))
 };
 function ratingPill(b){
   if (b.rating === 'SOV') return '<span class="pill r-hi" title="Sovereign / state government paper">SOV</span>';
@@ -554,31 +2165,115 @@ function ratingPill(b){
   const i = RANKS.indexOf(b.rating);
   return `<span class="pill ${i >= 0 && i <= 3 ? 'r-hi' : i >= 0 && i <= 8 ? 'r-mid' : 'r-lo'}">${esc(b.rating)}</span>`;
 }
+
+function renderPulseAndCurve(list){
+  $('cMarket').textContent = list.length.toLocaleString('en-IN');
+  $('pkCount').textContent = list.length.toLocaleString('en-IN');
+  const sovCnt = list.filter(b => b.cat === 'Sovereign' || b.cat === 'State').length;
+  const psuCnt = list.filter(b => b.cat === 'PSU').length;
+  const corpCnt = list.filter(b => b.cat === 'Corporate').length;
+  $('pkCountSub').textContent = `${sovCnt} Gov · ${psuCnt} PSU · ${corpCnt} Corp`;
+
+  const ytms = list.map(b => b.a?.ytm).filter(y => y !== null && isFinite(y) && y > 0 && y < 40).sort((a,b) => a - b);
+  if (ytms.length){
+    const med = ytms[Math.floor(ytms.length / 2)];
+    $('pkMedYtm').textContent = pc(med);
+    $('pkRangeYtm').textContent = `Range ${pc(ytms[0])} – ${pc(ytms[ytms.length - 1])}`;
+    const topBond = list.filter(b => b.a?.ytm !== null && b.a?.ytm < 40).sort((a,b) => b.a.ytm - a.a.ytm)[0];
+    if (topBond){
+      $('pkTopYtm').textContent = pc(topBond.a.ytm);
+      $('pkTopName').textContent = `${dispName(topBond)} (${topBond.sym})`;
+    }
+  } else {
+    $('pkMedYtm').textContent = '—';
+    $('pkRangeYtm').textContent = 'No valid yields';
+    $('pkTopYtm').textContent = '—';
+    $('pkTopName').textContent = '—';
+  }
+  const liqActive = list.filter(b => b.liqTier === 'liquid' || b.liqTier === 'active').length;
+  const liveCnt = list.filter(b => b.src === 'live').length;
+  $('pkLiq').textContent = liqActive.toLocaleString('en-IN');
+  $('pkLiqSub').textContent = `${liveCnt.toLocaleString('en-IN')} traded live today`;
+
+  if (!curveOpen) return;
+  const svg = $('curveSvg');
+  const pts = list.filter(b => b.a && b.a.ytm !== null && b.a.ytm > 0 && b.a.ytm <= 22 && b.a.yrs > 0 && b.a.yrs <= 30).slice(0, 260);
+  if (!pts.length){
+    svg.innerHTML = `<text x="430" y="95" text-anchor="middle" fill="var(--text-dim)" font-size="13">No bonds with plot-ready yield &amp; maturity in current filter</text>`;
+    return;
+  }
+  const maxX = Math.max(5, Math.min(30, Math.ceil(Math.max(...pts.map(b => b.a.yrs)))));
+  const minY = Math.max(0, Math.floor(Math.min(...pts.map(b => b.a.ytm)) - 0.5));
+  const maxY = Math.min(24, Math.ceil(Math.max(...pts.map(b => b.a.ytm)) + 0.5));
+  const padL = 44, padR = 18, padT = 12, padB = 24, W = 860, H = 190;
+  const xOf = yrs => padL + (yrs / maxX) * (W - padL - padR);
+  const yOf = ytm => padT + (1 - (ytm - minY) / Math.max(maxY - minY, 1)) * (H - padT - padB);
+
+  let g = '';
+  for (let i = 0; i <= 4; i++){
+    const yv = minY + (maxY - minY) * (i / 4);
+    const yy = yOf(yv);
+    g += `<line x1="${padL}" y1="${yy.toFixed(1)}" x2="${W - padR}" y2="${yy.toFixed(1)}" stroke="var(--border-soft)" stroke-dasharray="3,3"/>`;
+    g += `<text x="${padL - 6}" y="${(yy + 4).toFixed(1)}" text-anchor="end" fill="var(--text-faint)" font-size="10" font-family="var(--mono)">${yv.toFixed(1)}%</text>`;
+  }
+  const xSteps = [1, 3, 5, 7, 10, 15, 20, 25, 30].filter(v => v <= maxX);
+  xSteps.forEach(xv => {
+    const xx = xOf(xv);
+    g += `<line x1="${xx.toFixed(1)}" y1="${padT}" x2="${xx.toFixed(1)}" y2="${H - padB}" stroke="var(--border-soft)" stroke-dasharray="2,4"/>`;
+    g += `<text x="${xx.toFixed(1)}" y="${H - 6}" text-anchor="middle" fill="var(--text-faint)" font-size="10" font-family="var(--mono)">${xv}y</text>`;
+  });
+  pts.forEach(b => {
+    const cx = xOf(b.a.yrs).toFixed(1), cy = yOf(b.a.ytm).toFixed(1);
+    const col = b.cat === 'Sovereign' ? 'var(--green)' : (b.cat === 'PSU' || b.cat === 'State') ? 'var(--blue)' : 'var(--orange)';
+    const r = (D && D.id === b.id) ? 6.5 : 4.8;
+    g += `<circle class="c-pt" data-id="${esc(b.id)}" cx="${cx}" cy="${cy}" r="${r}" fill="${col}" fill-opacity="0.88" stroke="var(--surface)" stroke-width="1.2" style="cursor:pointer"/>`;
+  });
+  svg.innerHTML = g;
+}
+
 function renderMarket(){
+  updateFilterUI();
   const base = filtered(true);
   const counts = {short:0, medium:0, long:0}; base.forEach(b => counts[b.term]++);
   $('terms').innerHTML = [['', 'All terms', base.length], ['short', 'Short term · under 12 months', counts.short],
     ['medium', 'Medium · 1 to 3 years', counts.medium], ['long', 'Long · 3+ years', counts.long]]
     .map(([k, l, n]) => `<button class="chip ${term === k ? 'on' : ''}" data-term="${k}">${l}<b>${n.toLocaleString('en-IN')}</b></button>`).join('');
-  const list = (term ? base.filter(b => b.term === term) : base).sort(SORTS[$('fSort').value]);
+  const sortKey = $('fSort').value;
+  const list = (term ? base.filter(b => b.term === term) : base).sort(SORTS[sortKey]);
+
+  // Update column header sort indicators
+  document.querySelectorAll('thead th.sortable').forEach(th => {
+    const k = th.dataset.sort;
+    const isMat = k === 'mat' && (sortKey === 'mat' || sortKey === 'matFar');
+    const active = k === sortKey || isMat;
+    th.classList.toggle('sorted', active);
+    const arr = th.querySelector('.sort-arr');
+    if (arr) arr.textContent = active ? (sortKey === 'mat' || sortKey === 'price' || sortKey === 'name' ? '↑' : '↓') : '';
+  });
+
+  renderPulseAndCurve(list);
+
   $('meta').textContent = `${list.length.toLocaleString('en-IN')} bonds. Yield (CAGR) = annualised return if bought now and held to maturity, accrued interest included. Click a bond for full details.${hiddenIlliquid ? ` ${hiddenIlliquid.toLocaleString('en-IN')} more are hidden by the liquidity filter.` : ''} * Payment frequency is assumed for corporate bonds (not in NSE’s bond feed).`;
   $('empty').style.display = list.length ? 'none' : 'block';
   $('more').style.display = list.length > shown ? 'block' : 'none';
   $('rows').innerHTML = list.slice(0, shown).map(b => {
     const stale = b.src !== 'live' ? ` <span class="sub" title="No trade today. Price is the ${b.src === 'prev' ? 'previous close' : 'last close'}.">· ${b.src === 'prev' ? 'prev close' : 'close'}</span>` : '';
     const y = b.a.ytm;
-    return `<tr class="row" data-id="${esc(b.id)}">
-      <td class="l"><div class="nm" title="${esc(b.issueDesc || '')}">${esc(dispName(b))} <span class="sub">${esc(b.sym)}</span></div><div class="sub">${esc(b.isin)} · ${unitName(b)}${b.cpn ? '' : ' (zero coupon)'}${effSec(b) ? ' · ' + esc(effSec(b)) : ''}</div></td>
+    const yPct = y !== null && y > 0 ? Math.min(100, Math.round((y / 14) * 100)) : 0;
+    const lPct = b.liq ? Math.min(100, Math.round((b.liq.days / Math.max(b.liq.sessions || 30, 1)) * 100)) : 0;
+    const sel = D && D.id === b.id ? ' selected' : '';
+    return `<tr class="row${sel}" data-id="${esc(b.id)}">
+      <td class="l sticky-col"><div class="nm" title="${esc(b.issueDesc || '')}">${esc(dispName(b))} <span class="sub">${esc(b.sym)}</span></div><div class="sub">${esc(b.isin)} · ${unitName(b)}${b.cpn ? '' : ' (zero coupon)'}${effSec(b) ? ' · ' + esc(effSec(b)) : ''}</div></td>
       <td><span class="pill t-${b.term}">${b.term === 'short' ? 'SHORT' : b.term === 'medium' ? 'MEDIUM' : 'LONG'}</span></td>
       <td>${ratingPill(b)}</td><td>${esc(b.cat)}</td>
       <td class="num">${b.cpn ? pc(b.cpn) : '—'}<div style="margin-top:3px">${payPill(b, b.freq)}</div></td>
       <td class="num">${inr(b.price)}${stale}</td>
       <td class="num">${b.src === 'live' ? sgn(b.chg, v => pc(v)) : '<span class="dim">—</span>'}</td>
-      <td class="num yld" title="${y > 20 ? 'Very high. Usually distress, an illiquid price, or an amortising bond whose remaining principal is below the listed face value. Verify before relying on it.' : ''}">${y === null ? '<span class="dim" title="' + esc(b.flag || 'Under 3 months left: too short to annualise sensibly. Use the calculator for the actual return.') + '">n/a</span>' : pc(y)}${y > 20 ? ' ⚠' : ''}</td>
+      <td class="num yld" title="${y > 20 ? 'Very high. Usually distress, an illiquid price, or an amortising bond whose remaining principal is below the listed face value. Verify before relying on it.' : ''}">${y === null ? '<span class="dim" title="' + esc(b.flag || 'Under 3 months left: too short to annualise sensibly. Use the calculator for the actual return.') + '">n/a</span>' : pc(y)}${y > 20 ? ' ⚠' : ''}${yPct ? `<div class="mini-bar"><div class="mini-fill" style="width:${yPct}%"></div></div>` : ''}</td>
       <td class="num">${b.cpn ? pc(b.a.cy) : '—'}</td>
       <td class="num">${fmtD(parse(b.mat))}${b.matApprox ? ' <span class="sub" title="NSE gives only the maturity year for this bond. Day and month are estimated.">~</span>' : ''}</td>
       <td class="num">${left(b)}</td>
-      <td>${b.liqTier ? `<span class="pill l-${b.liqTier}" title="${esc(liqText(b))}">${LIQ_LABEL[b.liqTier]}</span><div class="sub">${b.liq.days}/${b.liq.sessions} days</div>` : '<span class="dim">…</span>'}</td>
+      <td>${b.liqTier ? `<span class="pill l-${b.liqTier}" title="${esc(liqText(b))}">${LIQ_LABEL[b.liqTier]}</span><div class="sub">${b.liq.days}/${b.liq.sessions} days</div><div class="mini-bar"><div class="mini-fill liq-${b.liqTier}" style="width:${lPct}%"></div></div>` : '<span class="dim">…</span>'}</td>
       <td class="num">${b.val ? '₹' + compact(b.val) : '—'}</td>
       <td><button class="btn btn-sm btn-primary" data-open="${esc(b.id)}">Details</button></td></tr>`;
   }).join('');
@@ -594,7 +2289,7 @@ function secInfo(b){
   if (b.kind === 'SDL') return ['State government loan', 'Issued by a state government. No state has defaulted on an SDL; they usually yield a little more than G-Secs.'];
   return ['Not in NSE\'s feed', 'NSE\'s feed does not say whether this is senior secured, senior unsecured or subordinated (Tier II). Security rank decides who is repaid first if the issuer fails. Check the issue\'s information memorandum or the issuer\'s site before buying. Tier II / perpetual / AT1 bonds usually carry noticeably higher coupons for that reason.'];
 }
-const ACRO = new Set(['REC','NHPC','THDC','NTPC','IIFL','HDFC','ICICI','LIC','TVS','UTI','DCB','NIIF','IREDA','SIDBI','NABARD','ESAF','ECL','CEAT','KPI','PVP','SPR','AVP','NDR','SMFG','PNB','HDFC','IRFC','NHAI','UK','AP','IFL','CO','ARC','L&T','A.K.','B.N.']);
+const ACRO = new Set(['REC','NHPC','THDC','NTPC','IIFL','HDFC','ICICI','LIC','TVS','UTI','DCB','NIIF','IREDA','SIDBI','NABARD','ESAF','ECL','CEAT','KPI','PVP','SPR','AVP','NDR','SMFG','PNB','IRFC','NHAI','UK','AP','IFL','CO','ARC','L&T','A.K.','B.N.']);
 const SMALLW = new Set(['of','and','for','the','in','to']);
 function titleCase(n){
   if (n !== n.toUpperCase()) return n.replace(/\s+/g, ' ').trim();
@@ -610,7 +2305,7 @@ function aboutHtml(b){
   else if (b.kind === 'TB') txt = 'Short-term borrowing by the Government of India. Bought at a discount to face value and redeemed at face value, with no interest payments in between.';
   else if (b.kind === 'SDL') txt = 'Issued by the ' + esc(b.name.replace(/ State$/, '')) + ' state government to fund its budget and projects. No state has defaulted on an SDL, and they usually yield a little more than G-Secs. SDLs are usually thinly traded.';
   else {
-    const blurb = ABOUT[normIss(b.issuer || '')];
+    const blurb = ABOUT[normIss(b.issuer || b.name || '')];
     txt = blurb ? esc(blurb) : 'No summary written for this issuer yet.';
     if (blurb) note = 'Summary written by Claude from general knowledge, not from NSE. It may be out of date, so verify it on the company’s website.';
   }
@@ -625,25 +2320,46 @@ function aboutHtml(b){
   }
   const q = encodeURIComponent((b.issuer || b.name) + (b.kind === 'CORP' ? ' company' : ''));
   return `<h3>About the issuer</h3><div class="note" style="font-size:13px;color:var(--text)">${txt}</div>${note ? `<div class="note">${note}</div>` : ''}${facts}
-    ${b.kind === 'CORP' ? `<div class="actions"><a class="btn btn-sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${q}">Search the company</a></div>` : ''}`;
+    ${b.kind === 'CORP' ? `<div class="actions"><a class="btn btn-sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${q}">Search the company ↗</a></div>` : ''}`;
 }
 const gsearch = q => 'https://www.google.com/search?q=' + encodeURIComponent(q);
 function openDetail(id){
   const b = byId[id]; if (!b) return;
   D = {id, amt: defAmt, tds: false, f: b.freq, mode: 'same', custom: Math.round(b.price/b.face*1000)/10, months: 6};
-  const [sec] = secInfo(b);
   $('drawer').innerHTML = `
-    <div class="dh"><div><h2>${esc(dispName(b))} <span class="dim" style="font-size:14px">${esc(b.sym)}</span></h2>
-      ${b.issueDesc ? `<div style="font-size:13px;margin-bottom:2px">${esc(b.issueDesc)}</div>` : ''}
-      <div class="sub">${esc(b.isin)} · NSE series ${esc(b.series || '—')} · ${unitName(b)}</div></div>
-      <button class="x" id="dClose" aria-label="Close">&times;</button></div>
-    <div class="badges"><span class="pill t-${b.term}">${TERM[b.term]}</span>${ratingPill(b)}
-      <span class="pill r-nr">${esc(b.cat)}</span>${b.agency ? `<span class="pill r-nr">${esc(b.agency)}</span>` : ''}</div>
+    <div class="dh-sticky">
+      <div class="dh">
+        <div>
+          <h2>${esc(dispName(b))} <span class="dim" style="font-size:14px">${esc(b.sym)}</span></h2>
+          ${b.issueDesc ? `<div style="font-size:12.5px;color:var(--text-dim);margin-bottom:2px">${esc(b.issueDesc)}</div>` : ''}
+          <div class="sub">
+            <span id="copyIsinBtn" style="cursor:pointer;text-decoration:underline" title="Click to copy ISIN">${esc(b.isin)}</span>
+            · NSE series ${esc(b.series || '—')} · ${unitName(b)}
+          </div>
+        </div>
+        <button class="x" id="dClose" aria-label="Close">&times;</button>
+      </div>
+      <div class="dh-bar">
+        <div class="badges">
+          <span class="pill t-${b.term}">${TERM[b.term]}</span>
+          ${ratingPill(b)}
+          <span class="pill r-nr">${esc(b.cat)}</span>
+          ${b.agency ? `<span class="pill r-nr">${esc(b.agency)}</span>` : ''}
+        </div>
+        <div class="dh-actions">
+          <button class="btn btn-sm btn-kite" id="dKiteTop">Buy on Kite ↗</button>
+          <button class="btn btn-sm btn-buy" id="dPracticeTop">Practice buy</button>
+        </div>
+      </div>
+    </div>
     ${aboutHtml(b)}
     <div id="dStatic"></div>
     <h3>Calculator: what could I earn?</h3>
+    <div class="preset-row" id="dPresets">
+      ${[[25000,'₹25K'],[50000,'₹50K'],[100000,'₹1L'],[250000,'₹2.5L'],[500000,'₹5L'],[1000000,'₹10L']].map(([v,lbl]) => `<button class="preset-btn ${D.amt===v?'on':''}" data-amt="${v}">${lbl}</button>`).join('')}
+    </div>
     <div class="ctl">
-      <label>Amount to invest (₹)<input type="text" inputmode="decimal" id="dAmt" value="${D.amt}" style="width:130px"></label>
+      <label>Amount to invest (₹)<input type="text" inputmode="decimal" id="dAmt" value="${D.amt}" style="width:140px"></label>
       <label title="Choosing a frequency here saves it as confirmed for this bond">Payment frequency ${b.cpn ? '' : '(n/a)'}<select id="dFreq" ${b.cpn ? '' : 'disabled'}>${[1,2,4,12].map(f => `<option value="${f}" ${f === b.freq ? 'selected' : ''}>${FREQ[f]}</option>`).join('')}</select></label>
       <label class="row"><input type="checkbox" id="dTds" ${b.cpn ? '' : 'disabled'}> Deduct 10% TDS</label>
     </div>
@@ -651,9 +2367,9 @@ function openDetail(id){
     ${b.kind === 'CORP' ? `<h3>Confirm the terms</h3>
     <div class="note">Payment frequency and seniority are not in NSE’s feed. These open web searches for this ISIN. Once you have the answer, pick the frequency above and it is saved.</div>
     <div class="actions">
-      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' ' + b.sym + ' information memorandum coupon payment frequency secured unsecured')}">Issue document</a>
-      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' ' + (b.agency || 'CRISIL ICRA CARE').split(',')[0] + ' rating rationale')}">Rating rationale</a>
-      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' NCD interest payment dates')}">Payout dates</a>
+      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' ' + b.sym + ' information memorandum coupon payment frequency secured unsecured')}">Issue document ↗</a>
+      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' ' + (b.agency || 'CRISIL ICRA CARE').split(',')[0] + ' rating rationale')}">Rating rationale ↗</a>
+      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' NCD interest payment dates')}">Payout dates ↗</a>
     </div>` : ''}
     <h3>Buy</h3>
     <div class="actions">
@@ -661,7 +2377,24 @@ function openDetail(id){
       <button class="btn btn-buy" id="dPractice">Practice buy</button>
     </div>
     <div class="note" id="kiteNote"></div>`;
-  $('dAmt').oninput = e => { D.amt = parseFloat(e.target.value.replace(/,/g,'')) || 0; renderDyn(); };
+  $('copyIsinBtn').onclick = () => {
+    try{ navigator.clipboard.writeText(b.isin); }catch(e){}
+    toast('Copied ISIN ' + b.isin);
+  };
+  $('dPresets').onclick = e => {
+    const btn = e.target.closest('[data-amt]');
+    if (!btn) return;
+    D.amt = +btn.dataset.amt;
+    defAmt = D.amt; store.set(KEY.amt, defAmt);
+    $('dAmt').value = D.amt;
+    $('dPresets').querySelectorAll('.preset-btn').forEach(x => x.classList.toggle('on', x === btn));
+    renderDyn();
+  };
+  $('dAmt').oninput = e => {
+    D.amt = parseFloat(e.target.value.replace(/,/g,'')) || 0;
+    $('dPresets').querySelectorAll('.preset-btn').forEach(x => x.classList.toggle('on', +x.dataset.amt === D.amt));
+    renderDyn();
+  };
   $('dFreq').onchange = e => {
     D.f = +e.target.value; freqOv[b.id] = D.f; store.set(KEY.freq, freqOv);
     prep(b); renderStatic(); renderDyn(); renderMarket();
@@ -679,13 +2412,15 @@ function openDetail(id){
   $('dTds').onchange = e => { D.tds = e.target.checked; renderDyn(); };
   $('dClose').onclick = closeDetail;
   $('dKite').onclick = () => kite(b);
+  $('dKiteTop').onclick = () => kite(b);
   $('dPractice').onclick = () => openTrade(b, 'BUY');
-  renderStatic(); renderDyn();
+  $('dPracticeTop').onclick = () => openTrade(b, 'BUY');
+  renderStatic(); renderDyn(); renderMarket();
   $('veil').classList.add('open'); $('drawer').classList.add('open'); $('drawer').scrollTop = 0;
 }
-function closeDetail(){ $('veil').classList.remove('open'); $('drawer').classList.remove('open'); D = null; }
+function closeDetail(){ $('veil').classList.remove('open'); $('drawer').classList.remove('open'); D = null; renderMarket(); }
 function cur(){ const b = byId[D.id]; return [b, analyse(b, D.f)]; }
-function cell(k, v, n){ return `<div class="cell"><div class="k">${k}</div><div class="v">${v}</div>${n ? `<div class="n">${n}</div>` : ''}</div>`; }
+function cell(k, v, n, hero=false){ return `<div class="cell${hero?' hero-cell':''}"><div class="k">${k}</div><div class="v">${v}</div>${n ? `<div class="n">${n}</div>` : ''}</div>`; }
 function renderStatic(){
   const [b, a] = cur(), [sec, secTxt] = secInfo(b);
   const live = b.src === 'live';
@@ -709,12 +2444,12 @@ function renderStatic(){
       ${b.term === 'short' ? 'Under 12 months, so a short-term holding: the annualised yield can look large because a small gain is scaled up to a full year.' : ''}</div>
     <h3>Earning right now</h3>
     <div class="grid">
-      ${cell('Coupon', b.cpn ? pc(b.cpn) : 'None', b.cpn ? `₹${(b.face*b.cpn/100).toLocaleString('en-IN')} a year per unit` : 'sold at a discount')}
-      ${cell('Current yield', b.cpn ? pc(a.cy) : '—', 'coupon ÷ price')}
-      ${cell('Yield to maturity (CAGR)', a.ytm === null ? 'n/a' : pc(a.ytm), a.ytm === null ? (b.flag ? 'see warning above' : 'under 3 months left') : 'annualised, held to maturity')}
-      ${cell('Price', inr(b.price), `${(b.price/b.face*100).toFixed(2)}% of face ${inr0(b.face)}`)}
+      ${cell('Yield to maturity (CAGR)', a.ytm === null ? 'n/a' : pc(a.ytm), a.ytm === null ? (b.flag ? 'see warning above' : 'under 3 months left') : 'annualised, held to maturity', true)}
+      ${cell('You pay per unit', inr(a.dirty), 'price + accrued interest', true)}
+      ${cell('Coupon', b.cpn ? pc(b.cpn) : 'None', b.cpn ? `₹${(b.face*b.cpn/100).toLocaleString('en-IN')} a year per unit` : 'sold at a discount', true)}
+      ${cell('Clean price', inr(b.price), `${(b.price/b.face*100).toFixed(2)}% of face ${inr0(b.face)}`)}
       ${cell('Accrued interest', inr(a.acc), 'owed to seller; added to cost')}
-      ${cell('You pay per unit', inr(a.dirty), 'price + accrued')}
+      ${cell('Current yield', b.cpn ? pc(a.cy) : '—', 'coupon ÷ clean price')}
       ${cell('Next payout', a.dates.length && b.cpn ? fmtD(a.dates[0]) : fmtD(parse(b.mat)), b.cpn ? FREQ[a.f].toLowerCase() : 'at maturity')}
       ${cell('Traded today', b.qty ? b.qty.toLocaleString('en-IN') + ' units' : 'none', b.val ? '₹' + compact(b.val) + (b.hi ? ` · ${b.lo}–${b.hi}` : '') : 'thin market: may be hard to sell')}
       ${cell('Price source', live ? 'Last traded' : b.src === 'prev' ? 'Previous close' : 'Last close', live ? pc(b.chg) + ' on the day' : 'no trade today')}
@@ -729,6 +2464,35 @@ function renderStatic(){
       ? '<b>No trades in the last ' + b.liq.sessions + ' sessions.</b> The price above is old, and you may not be able to buy or sell this bond at all, let alone at that price. Treat the yield as theoretical.'
       : '<b>Thin market.</b> This bond traded only ' + b.liq.days + ' time' + (b.liq.days === 1 ? '' : 's') + ' in ' + b.liq.sessions + ' sessions' + (b.liq.last ? ' (last on ' + fmtD(parse(b.liq.last)) + ')' : '') + '. Expect a wide gap between buy and sell prices, and it may be slow to sell.'}</div>` : '<div class="note">Trading history is still loading. Refresh in a minute.</div>'}`;
 }
+function renderCashflowSvg(dates, intr, prin){
+  const shownDates = dates.length > 24 ? [...dates.slice(0, 23), dates[dates.length - 1]] : dates;
+  const n = shownDates.length;
+  const W = 580, H = 96, padL = 8, padR = 8, padT = 12, padB = 20;
+  const maxVal = Math.max(intr + prin, 1);
+  const bw = Math.max(6, Math.min(22, Math.floor((W - padL - padR) / Math.max(n, 1) * 0.65)));
+  let bars = '';
+  shownDates.forEach((d, i) => {
+    const isLast = i === n - 1;
+    const x = padL + (n === 1 ? (W - padL - padR)/2 : i * ((W - padL - padR - bw) / (n - 1)));
+    const hCpn = intr ? Math.max(4, (intr / maxVal) * (H - padT - padB)) : 0;
+    const hPrin = isLast ? Math.max(8, (prin / maxVal) * (H - padT - padB)) : 0;
+    const yCpn = H - padB - hCpn - hPrin;
+    const yPrin = H - padB - hPrin;
+    if (hPrin) bars += `<rect x="${x.toFixed(1)}" y="${yPrin.toFixed(1)}" width="${bw}" height="${hPrin.toFixed(1)}" rx="2" fill="var(--blue)"><title>${fmtD(d)} · Principal ${inr0(prin)}</title></rect>`;
+    if (hCpn) bars += `<rect x="${x.toFixed(1)}" y="${yCpn.toFixed(1)}" width="${bw}" height="${hCpn.toFixed(1)}" rx="2" fill="var(--green)"><title>${fmtD(d)} · Interest ${inr0(intr)}</title></rect>`;
+    if (i === 0 || isLast || (n <= 8 && i % 2 === 0)) {
+      const lbl = d.toLocaleDateString('en-IN', {month:'short', year:'2-digit', timeZone:'UTC'});
+      bars += `<text x="${(x + bw/2).toFixed(1)}" y="${H - 5}" text-anchor="middle" fill="var(--text-faint)" font-size="9.5" font-family="var(--mono)">${lbl}</text>`;
+    }
+  });
+  return `<div class="cf-chart-box">
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-bottom:4px">
+      <span>Cash-flow schedule (${dates.length} payout${dates.length===1?'':'s'})</span>
+      <span><b style="color:var(--green)">■</b> Interest &nbsp; <b style="color:var(--blue)">■</b> Principal at maturity</span>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:92px;display:block">${bars}</svg>
+  </div>`;
+}
 function renderDyn(){
   const [b, a] = cur();
   if (b.flag){ $('dDyn').innerHTML = '<div class="note">The return calculator is switched off for this bond because its data in the NSE feed is not reliable enough to compute a payout. Check the issuer\'s term sheet for the real principal, redemption amount and payment dates.</div>'; $('kiteNote').textContent = 'Copies the NSE symbol and opens Kite so you can search for it.'; return; }
@@ -737,7 +2501,20 @@ function renderDyn(){
   let html = '';
   if (!r){ html = `<div class="note neg">Amount is below one unit (${inr(a.dirty)}).</div>`; }
   else {
-    html += `<table class="kv">
+    const pPct = Math.max(5, Math.round((r.invest / Math.max(r.total, 1)) * 100));
+    const gPct = Math.max(0, 100 - pPct);
+    html += `
+      <div class="ret-stack-wrap">
+        <div class="ret-stack-bar">
+          <div class="ret-seg-prin" style="width:${pPct}%" title="Invested: ${inr0(r.invest)}"></div>
+          <div class="ret-seg-cpn" style="width:${gPct}%" title="Net profit: ${inr0(r.gain)}"></div>
+        </div>
+        <div class="ret-stack-leg">
+          <span><b style="color:var(--blue)">●</b> Invested: <span class="num">${inr0(r.invest)}</span> (${r.units} units)</span>
+          <span><b style="color:var(--green)">●</b> Net gain: <span class="num">${sgn(r.gain, inr0)}</span> (${pc(r.ann)}/yr)</span>
+        </div>
+      </div>
+      <table class="kv">
       <tr><td>Units bought at ${inr(a.dirty)} (price + accrued)</td><td>${r.units}</td></tr>
       <tr><td>Money invested</td><td>${inr(r.invest)}</td></tr>
       <tr><td>Unused cash (whole units only)</td><td>${inr(r.left)}</td></tr>
@@ -763,7 +2540,9 @@ function renderDyn(){
     <div class="note">Selling early depends on the market price then. Bond prices fall when interest rates rise and rise when they fall, and thinly traded bonds may not sell at the price shown. Sale value includes interest accrued up to the sale date. "Per year" compares total money back with money in; the yield to maturity above also assumes coupons are reinvested, so the two differ slightly. Brokerage, taxes (other than the optional TDS) and capital-gains tax are not included.</div>`;
     {
       const intr = b.cpn ? r.units * a.per * (tdsOn ? 1 - TDS : 1) : 0, prin = r.units * b.face, n = a.dates.length;
-      html += `<h3>When you get paid · ${b.cpn ? 'interest ' + FREQ[a.f].toLowerCase() + ', ' + FREQ_ADV[a.f] : 'at maturity only'}</h3><div class="box"><table class="mini" style="border:0"><thead><tr><th class="l">#</th><th class="l">Date</th><th>Interest</th><th>Principal</th><th>Total</th></tr></thead><tbody>` +
+      html += `<h3>When you get paid · ${b.cpn ? 'interest ' + FREQ[a.f].toLowerCase() + ', ' + FREQ_ADV[a.f] : 'at maturity only'}</h3>` +
+        renderCashflowSvg(a.dates, intr, prin) +
+        `<div class="box"><table class="mini" style="border:0"><thead><tr><th class="l">#</th><th class="l">Date</th><th>Interest</th><th>Principal</th><th>Total</th></tr></thead><tbody>` +
         a.dates.map((d, i) => {
           const p = i === n-1 ? prin : 0;
           return `<tr><td class="l">${i+1}</td><td class="l">${fmtD(d)}</td><td class="num">${inr(intr)}</td><td class="num">${p ? inr(p) : '—'}</td><td class="num">${inr(intr + p)}</td></tr>`;
@@ -802,21 +2581,21 @@ function kite(b){
   }
 }
 let toastT;
-function toast(m){ const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 6000); }
+function toast(m){ const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 5000); }
 
 // ---------- practice trading ----------
 let T = null;
 function openTrade(b, side){
   const pos = positions[b.id], held = pos ? pos.qty : 0, p = b.price;
   T = {b, side, held};
-  $('tdTitle').textContent = (side === 'BUY' ? 'Practice buy: ' : 'Practice sell: ') + b.name + ' ' + b.sym;
+  $('tdTitle').textContent = (side === 'BUY' ? 'Practice buy: ' : 'Practice sell: ') + dispName(b) + ' ' + b.sym;
   $('tdSub').textContent = `Price ${inr(p)} per unit. Practice only: no real order is placed.`;
   const def = side === 'BUY' ? Math.max(1, Math.floor(defAmt / p)) : held;
   $('tdQty').value = def; $('tdErr').textContent = ''; tdInfo();
   $('tradeDlg').showModal();
 }
 function tdInfo(){ const q = parseInt($('tdQty').value) || 0, p = T.b.price;
-  $('tdInfo').textContent = `Order value ${inr(q * p)} · ${T.side === 'BUY' ? 'cash ' + inr(cash) : 'held ' + T.held}`; }
+  $('tdInfo').textContent = `Order value ${inr(q * p)} · ${T.side === 'BUY' ? 'available cash ' + inr(cash) : 'units held ' + T.held}`; }
 $('tdQty').oninput = tdInfo;
 $('tdCancel').onclick = () => $('tradeDlg').close();
 $('tdGo').onclick = () => {
@@ -824,14 +2603,16 @@ $('tdGo').onclick = () => {
   if (q < 1) return err('Enter a quantity of at least 1.');
   if (side === 'BUY'){
     if (q * p > cash) return err('Not enough practice cash.');
-    const o = positions[b.id] || {qty:0, avg:0, sym:b.sym, name:b.name};
+    const o = positions[b.id] || {qty:0, avg:0, sym:b.sym, name:dispName(b)};
     positions[b.id] = {...o, qty:o.qty+q, avg:(o.qty*o.avg + q*p)/(o.qty+q)};
-    cash -= q * p; orders.push({ts:Date.now(), type:'buy', id:b.id, name:b.name + ' ' + b.sym, qty:q, price:p, pnl:0});
+    cash -= q * p; orders.push({ts:Date.now(), type:'buy', id:b.id, name:dispName(b) + ' ' + b.sym, qty:q, price:p, pnl:0});
+    toast(`Bought ${q} unit${q===1?'':'s'} of ${b.sym} in practice portfolio.`);
   } else {
     if (q > held) return err('You only hold ' + held + ' units.');
     const pnl = q * (p - positions[b.id].avg);
     positions[b.id].qty -= q; if (!positions[b.id].qty) delete positions[b.id];
-    cash += q * p; orders.push({ts:Date.now(), type:'sell', id:b.id, name:b.name + ' ' + b.sym, qty:q, price:p, pnl});
+    cash += q * p; orders.push({ts:Date.now(), type:'sell', id:b.id, name:dispName(b) + ' ' + b.sym, qty:q, price:p, pnl});
+    toast(`Sold ${q} unit${q===1?'':'s'} of ${b.sym} from practice portfolio.`);
   }
   store.set(KEY.pos, positions); store.set(KEY.ord, orders); store.set(KEY.cash, cash);
   $('tradeDlg').close(); renderPortfolio(); renderOrders(); renderStats();
@@ -839,18 +2620,35 @@ $('tdGo').onclick = () => {
 const priceOf = (id, p) => byId[id] ? byId[id].price : p.avg;
 function renderPortfolio(){
   const rows = Object.entries(positions);
+  $('cPort').textContent = rows.length;
   $('pEmpty').style.display = rows.length ? 'none' : 'block';
+  let totCost = 0, totVal = 0, totUnits = 0;
+  rows.forEach(([id, p]) => {
+    const c = priceOf(id, p);
+    totCost += p.qty * p.avg;
+    totVal += p.qty * c;
+    totUnits += p.qty;
+  });
+  const totPnl = totVal - totCost;
+  $('ppCount').textContent = rows.length;
+  $('ppUnits').textContent = `${totUnits.toLocaleString('en-IN')} unit${totUnits===1?'':'s'} held`;
+  $('ppCost').textContent = inr0(totCost);
+  $('ppVal').textContent = inr0(totVal);
+  $('ppPnl').innerHTML = rows.length ? sgn(totPnl, inr0) : '₹0';
+  $('ppPnlPct').innerHTML = totCost > 0 ? sgn((totPnl / totCost) * 100, v => pc(v)) + ' on invested' : '0.00% on invested';
+
   $('pRows').innerHTML = rows.map(([id, p]) => {
     const c = priceOf(id, p), pl = p.qty * (c - p.avg);
-    return `<tr><td class="l"><div class="nm">${esc(p.name)} <span class="sub">${esc(p.sym)}</span></div><div class="sub">${esc(id)}</div></td>
+    return `<tr class="row" data-pid="${esc(id)}"><td class="l sticky-col"><div class="nm">${esc(p.name)} <span class="sub">${esc(p.sym)}</span></div><div class="sub">${esc(id)}</div></td>
       <td class="num">${p.qty}</td><td class="num">${inr(p.avg)}</td><td class="num">${inr(c)}</td><td class="num">${inr(p.qty*c)}</td>
       <td class="num">${sgn(pl, inr)}</td><td class="num">${sgn((c/p.avg-1)*100, v => pc(v))}</td>
       <td><button class="btn btn-sm btn-sell" data-sell="${esc(id)}">Sell</button></td></tr>`; }).join('');
 }
 function renderOrders(){
+  $('cOrders').textContent = orders.length;
   $('oEmpty').style.display = orders.length ? 'none' : 'block';
   $('oRows').innerHTML = orders.slice().reverse().map(o => `<tr><td class="l num">${new Date(o.ts).toLocaleString('en-IN')}</td><td class="l">${esc(o.name)}</td>
-    <td><span class="${o.type === 'buy' ? 'pos' : 'neg'}"><b>${o.type.toUpperCase()}</b></span></td><td class="num">${o.qty}</td><td class="num">${inr(o.price)}</td>
+    <td><span class="pill ${o.type === 'buy' ? 'r-hi' : 'r-lo'}">${o.type.toUpperCase()}</span></td><td class="num">${o.qty}</td><td class="num">${inr(o.price)}</td>
     <td class="num">${inr(o.qty*o.price)}</td><td class="num">${o.type === 'sell' ? sgn(o.pnl, inr) : '—'}</td></tr>`).join('');
 }
 function renderStats(){
@@ -864,15 +2662,104 @@ const renderAll = () => { renderMarket(); renderPortfolio(); renderOrders(); ren
 document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
   document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + t.dataset.view));
+  $('marketTools').style.display = t.dataset.view === 'market' ? 'flex' : 'none';
 });
+$('curveToggleBtn').onclick = () => {
+  curveOpen = !curveOpen;
+  $('curvePanel').classList.toggle('open', curveOpen);
+  $('curveToggleBtn').classList.toggle('btn-primary', curveOpen);
+  if (curveOpen) renderMarket();
+};
+$('curveSvg').onclick = e => {
+  const pt = e.target.closest('.c-pt');
+  if (pt && pt.dataset.id) openDetail(pt.dataset.id);
+};
+$('curveSvg').onmousemove = e => {
+  const pt = e.target.closest('.c-pt');
+  const tip = $('curveTip');
+  if (!pt || !byId[pt.dataset.id]){ tip.style.display = 'none'; return; }
+  const b = byId[pt.dataset.id];
+  tip.innerHTML = `<div style="font-weight:600">${esc(dispName(b))} <span class="sub">${esc(b.sym)}</span></div>
+    <div class="num" style="color:var(--gold);margin-top:2px">YTM: ${pc(b.a.ytm)} · Coupon: ${b.cpn ? pc(b.cpn) : '0%'}</div>
+    <div class="sub">Matures ${fmtD(parse(b.mat))} (${left(b)}) · ${esc(b.rating || 'NR')}</div>`;
+  const rect = $('curveWrap').getBoundingClientRect();
+  const leftPx = Math.min(rect.width - 210, Math.max(8, e.clientX - rect.left + 12));
+  const topPx = Math.max(8, e.clientY - rect.top - 42);
+  tip.style.left = leftPx + 'px';
+  tip.style.top = topPx + 'px';
+  tip.style.display = 'block';
+};
+$('curveSvg').onmouseleave = () => { $('curveTip').style.display = 'none'; };
+
+$('advBtn').onclick = () => {
+  const open = $('advFilters').classList.toggle('open');
+  $('advBtn').classList.toggle('btn-primary', open);
+};
+$('qClr').onclick = () => { $('q').value = ''; shown = 100; renderMarket(); $('q').focus(); };
+$('clrFiltersBtn').onclick = () => {
+  $('q').value = ''; $('fType').value = ''; $('fCat').value = ''; $('fRating').value = '';
+  $('minY').value = ''; $('fLiq').value = 'tradable'; $('fPay').value = ''; $('fSec').value = '';
+  $('fConf').checked = false; $('fLive').checked = false; $('fFlag').checked = false;
+  term = ''; shown = 100; renderMarket();
+};
 $('terms').onclick = e => { const c = e.target.closest('[data-term]'); if (c){ term = c.dataset.term; shown = 100; renderMarket(); } };
 ['q','fType','fCat','fRating','minY','fSort','fLiq','fLive','fFlag','fPay','fConf','fSec'].forEach(id => $(id).addEventListener(id === 'q' || id === 'minY' ? 'input' : 'change', () => { shown = 100; renderMarket(); }));
+
+// Clickable table column sorting
+document.querySelectorAll('thead th.sortable').forEach(th => {
+  th.onclick = () => {
+    const k = th.dataset.sort;
+    if (k === 'mat') {
+      $('fSort').value = $('fSort').value === 'mat' ? 'matFar' : 'mat';
+    } else {
+      $('fSort').value = k;
+    }
+    shown = 100;
+    renderMarket();
+  };
+});
+
 $('moreBtn').onclick = () => { shown += 200; renderMarket(); };
 $('rows').onclick = e => { const r = e.target.closest('tr.row'); if (r) openDetail(r.dataset.id); };
-$('pRows').onclick = e => { const s = e.target.closest('[data-sell]'); if (s && byId[s.dataset.sell]) openTrade(byId[s.dataset.sell], 'SELL'); };
+$('pRows').onclick = e => {
+  const s = e.target.closest('[data-sell]');
+  if (s && byId[s.dataset.sell]) { openTrade(byId[s.dataset.sell], 'SELL'); return; }
+  const r = e.target.closest('tr.row');
+  if (r && r.dataset.pid && byId[r.dataset.pid]) openDetail(r.dataset.pid);
+};
 $('veil').onclick = closeDetail;
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && D) closeDetail(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && D) closeDetail();
+  if (e.key === '/' && !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement?.tagName)) {
+    e.preventDefault();
+    $('q').focus();
+  }
+});
 $('refreshBtn').onclick = () => load(true);
+$('demoBtn').onclick = () => loadDemo();
+
+// Export filtered CSV
+$('exportBtn').onclick = () => {
+  const list = filtered(false).sort(SORTS[$('fSort').value]);
+  if (!list.length) return toast('No matching bonds to export.');
+  const hdr = ['ISIN','Symbol','Issuer','Category','Rating','Coupon_%','Payout_Per_Year','Price','YTM_CAGR_%','Current_Yield_%','Maturity','Liquidity_Days_30'];
+  const csvRows = [hdr.join(',')];
+  list.forEach(b => {
+    csvRows.push([
+      b.isin, b.sym, `"${dispName(b).replace(/"/g,'""')}"`, b.cat, b.rating || 'NR',
+      b.cpn || 0, b.cpn ? b.freq : 0, b.price, b.a?.ytm !== null ? b.a.ytm.toFixed(2) : '',
+      b.cpn ? b.a.cy.toFixed(2) : '', b.mat, b.liq ? b.liq.days : ''
+    ].join(','));
+  });
+  const blob = new Blob([csvRows.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ledger_bonds_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast(`Exported ${list.length.toLocaleString('en-IN')} bonds to CSV.`);
+};
+
 const FREQ_WORDS = {monthly:12, quarterly:4, 'semi-annual':2, semiannual:2, 'half-yearly':2, halfyearly:2, annual:1, yearly:1, '12':12, '4':4, '2':2, '1':1};
 $('importBtn').onclick = () => $('csvFile').click();
 $('csvFile').onchange = async e => {
@@ -898,8 +2785,10 @@ $('resetBtn').onclick = () => {
   if (!confirm('Reset the practice account? This clears positions, orders and cash.')) return;
   positions = {}; orders = []; cash = START; store.set(KEY.pos, positions); store.set(KEY.ord, orders); store.set(KEY.cash, cash); renderAll();
 };
-$('theme').value = document.documentElement.dataset.theme;
+$('theme').value = document.documentElement.dataset.theme || 'system';
 $('theme').onchange = e => { document.documentElement.dataset.theme = e.target.value; store.set(KEY.theme, e.target.value); };
+$('tpl').value = document.documentElement.dataset.template || 'clean';
+$('tpl').onchange = e => { document.documentElement.dataset.template = e.target.value; store.set(KEY.tpl, e.target.value); };
 load(false);
 })();
 </script>

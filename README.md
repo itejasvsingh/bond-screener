@@ -27,6 +27,13 @@ before you republish any of it.
 
 `python3 build_static.py` writes a server-free copy to `dist/` (a data snapshot plus the page).
 
+## Automatic daily snapshot
+
+A GitHub Actions workflow (`.github/workflows/refresh.yml`) runs every weekday at 20:00 IST. It runs
+`python build_static.py --refresh` and publishes the result to the `vercel-snapshot` branch. Vercel builds
+that branch into a preview that only the account owner can open. `main` is never deployed
+(`vercel.json` skips its builds). To run it by hand: Actions tab, "Refresh snapshot", "Run workflow".
+
 ## Limits
 
 Information only, not investment advice. Payment frequency and seniority are often not in NSE's

@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en" data-template="clean">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — Bond Screener</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>try{var t=JSON.parse(localStorage.getItem('ledger3_theme'));document.documentElement.dataset.theme=(t==='light'||t==='dark')?t:'system'}catch(e){document.documentElement.dataset.theme='system'}</script>
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#0B0E13; --surface:#12161F; --surface-2:#171C27; --border:#232938; --border-soft:#1B212E;
+    --text:#E7E5DE; --text-dim:#8A90A3; --text-faint:#6A7188;
+    --gold:#C9A24B; --gold-dim:#8A733A; --green:#5FA97A; --red:#C1604F; --blue:#8FB3E0;
+    --on-gold:#14110A; --gold-hover:#D8B25E; --gold-tint:rgba(201,162,75,.08); --row-hover:rgba(201,162,75,.05);
+    --veil:rgba(6,7,10,.6); --veil-dlg:rgba(6,7,10,.7);
+    --hi-fg:#7FC79A; --hi-bd:#2F5240; --hi-bg:rgba(95,169,122,.08);
+    --mid-fg:#D8B25E; --mid-bd:#5C4B2A; --mid-bg:rgba(201,162,75,.08);
+    --lo-fg:#D08172; --lo-bd:#5C332A; --lo-bg:rgba(193,96,79,.08);
+    --sh-fg:#E0A96B; --sh-bd:#5C4328; --sh-bg:rgba(224,169,107,.08);
+    --me-fg:#8FB3E0; --me-bd:#33486B; --me-bg:rgba(143,179,224,.08);
+    --lg-fg:#B79AE0; --lg-bd:#4A3B6B; --lg-bg:rgba(183,154,224,.08);
+    --buy-bg:#2F5240; --buy-bd:#3A6B4F; --buy-fg:#A9E0BE;
+    --sell-bg:#5C332A; --sell-bd:#7A4536; --sell-fg:#EBB0A0;
+    --kite-bg:#1d3a5f; --kite-bd:#2c5a93; --kite-fg:#b9d6f7;
+    --bad-bd:#7A4536; --bad-fg:#EBB0A0; --bad-bg:rgba(193,96,79,.08);
+    --mono: ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;
+    --serif: "Iowan Old Style",Georgia,serif;
+  }
+  @media (prefers-color-scheme:light){ :root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg:#F5F3EC; --surface:#FFFFFF; --surface-2:#F1EEE5; --border:#DDD8C9; --border-soft:#ECE8DB;
+    --text:#1C1D21; --text-dim:#5E6475; --text-faint:#80869A;
+    --gold:#8A6A1C; --gold-dim:#C8AE6A; --green:#1E7A45; --red:#B3392A; --blue:#2D5E9E;
+    --on-gold:#FFFFFF; --gold-hover:#74590F; --gold-tint:rgba(138,106,28,.09); --row-hover:rgba(138,106,28,.06);
+    --veil:rgba(30,28,20,.40); --veil-dlg:rgba(30,28,20,.5);
+    --hi-fg:#17653A; --hi-bd:#A9D8BB; --hi-bg:#E4F4EA;
+    --mid-fg:#7A5A0A; --mid-bd:#E2CD8E; --mid-bg:#FAF1D6;
+    --lo-fg:#A12F22; --lo-bd:#EBB4AC; --lo-bg:#FBE6E3;
+    --sh-fg:#9A5412; --sh-bd:#EBC79F; --sh-bg:#FCEEDD;
+    --me-fg:#2D5E9E; --me-bd:#B3CBE8; --me-bg:#E6EFFA;
+    --lg-fg:#5E3E9C; --lg-bd:#CDBDE8; --lg-bg:#EEE8FA;
+    --buy-bg:#DDF1E5; --buy-bd:#9CCFB1; --buy-fg:#17653A;
+    --sell-bg:#FBE3DF; --sell-bd:#E8AFA6; --sell-fg:#A12F22;
+    --kite-bg:#E2EDFB; --kite-bd:#A9C6EC; --kite-fg:#1F4E8C;
+    --bad-bd:#E8AFA6; --bad-fg:#A12F22; --bad-bg:#FBE6E3;
+  } }
+  :root[data-theme="light"]{
+    color-scheme:light;
+    --bg:#F5F3EC; --surface:#FFFFFF; --surface-2:#F1EEE5; --border:#DDD8C9; --border-soft:#ECE8DB;
+    --text:#1C1D21; --text-dim:#5E6475; --text-faint:#80869A;
+    --gold:#8A6A1C; --gold-dim:#C8AE6A; --green:#1E7A45; --red:#B3392A; --blue:#2D5E9E;
+    --on-gold:#FFFFFF; --gold-hover:#74590F; --gold-tint:rgba(138,106,28,.09); --row-hover:rgba(138,106,28,.06);
+    --veil:rgba(30,28,20,.40); --veil-dlg:rgba(30,28,20,.5);
+    --hi-fg:#17653A; --hi-bd:#A9D8BB; --hi-bg:#E4F4EA;
+    --mid-fg:#7A5A0A; --mid-bd:#E2CD8E; --mid-bg:#FAF1D6;
+    --lo-fg:#A12F22; --lo-bd:#EBB4AC; --lo-bg:#FBE6E3;
+    --sh-fg:#9A5412; --sh-bd:#EBC79F; --sh-bg:#FCEEDD;
+    --me-fg:#2D5E9E; --me-bd:#B3CBE8; --me-bg:#E6EFFA;
+    --lg-fg:#5E3E9C; --lg-bd:#CDBDE8; --lg-bg:#EEE8FA;
+    --buy-bg:#DDF1E5; --buy-bd:#9CCFB1; --buy-fg:#17653A;
+    --sell-bg:#FBE3DF; --sell-bd:#E8AFA6; --sell-fg:#A12F22;
+    --kite-bg:#E2EDFB; --kite-bd:#A9C6EC; --kite-fg:#1F4E8C;
+    --bad-bd:#E8AFA6; --bad-fg:#A12F22; --bad-bg:#FBE6E3;
+  }
+  :root[data-theme="dark"]{ color-scheme:dark }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;padding:24px 20px 80px}
+  .wrap{max-width:1360px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:14px;border-bottom:1px solid var(--border)}
+  .brand-mark{font-family:var(--serif);font-size:27px;font-weight:600}
+  .brand-mark span{color:var(--gold);font-style:italic}
+  .brand-sub{font-size:12px;color:var(--text-dim);font-family:var(--mono);margin-top:3px}
+  .stats{display:flex;gap:24px;flex-wrap:wrap}
+  .stat{text-align:right}
+  .stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin-bottom:3px}
+  .stat-value{font-family:var(--mono);font-size:17px}
+  .pos{color:var(--green)} .neg{color:var(--red)} .gold{color:var(--gold)} .dim{color:var(--text-dim)}
+  .banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--text-dim);background:var(--surface);border:1px dashed var(--border);border-radius:6px;padding:8px 12px;margin-bottom:14px}
+  .banner b{color:var(--gold)} .spacer{flex:1}
+  .linkbtn{background:none;border:none;color:var(--text-dim);font:inherit;text-decoration:underline;cursor:pointer;padding:0}
+  .linkbtn:hover{color:var(--gold)}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px}
+  .tab{background:none;border:none;color:var(--text-faint);font:600 13px var(--sans);padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+  .view{display:none} .view.active{display:block}
+  select,input[type=text],input[type=number],.btn{font:13px var(--sans);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:6px;outline:none}
+  select{cursor:pointer}
+  .btn{cursor:pointer;font-weight:500;text-decoration:none;display:inline-block}
+  .btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+  .btn:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+  .btn-primary{background:var(--gold);border-color:var(--gold);color:var(--on-gold);font-weight:600}
+  .btn-primary:hover{background:var(--gold-hover);color:var(--on-gold)}
+  .btn-sm{padding:4px 9px;font-size:12px}
+  .btn-buy{background:var(--buy-bg);border-color:var(--buy-bd);color:var(--buy-fg)}
+  .btn-sell{background:var(--sell-bg);border-color:var(--sell-bd);color:var(--sell-fg)}
+  .btn-kite{background:var(--kite-bg);border-color:var(--kite-bd);color:var(--kite-fg)}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .filters label.chk{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--text-dim)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);border-radius:99px;padding:6px 14px;font:500 13px var(--sans);cursor:pointer}
+  .chip b{font-family:var(--mono);font-size:11px;margin-left:6px;color:var(--text-faint);font-weight:500}
+  .chip.on{border-color:var(--gold);color:var(--gold);background:var(--gold-tint)}
+  .meta{font-size:12px;color:var(--text-dim);margin:2px 0 8px}
+  .scroll{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow-x:auto}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:right;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-faint);font-weight:600;padding:11px 12px;border-bottom:1px solid var(--border);background:var(--surface-2);white-space:nowrap}
+  td{padding:10px 12px;border-bottom:1px solid var(--border-soft);white-space:nowrap;text-align:right;font-size:13px}
+  th.l,td.l{text-align:left}
+  tbody tr.row{cursor:pointer}
+  tbody tr.row:hover{background:var(--row-hover)}
+  tr:last-child td{border-bottom:none}
+  .num{font-family:var(--mono)}
+  .nm{font-weight:600;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+  .sub{font-family:var(--mono);font-size:10.5px;color:var(--text-faint)}
+  .pill{display:inline-block;font:600 10.5px var(--mono);padding:3px 8px;border-radius:4px;border:1px solid}
+  .r-hi{color:var(--hi-fg);border-color:var(--hi-bd);background:var(--hi-bg)}
+  .r-mid{color:var(--mid-fg);border-color:var(--mid-bd);background:var(--mid-bg)}
+  .r-lo{color:var(--lo-fg);border-color:var(--lo-bd);background:var(--lo-bg)}
+  .r-nr{color:var(--text-dim);border-color:var(--border);background:transparent}
+  .t-short{color:var(--sh-fg);border-color:var(--sh-bd);background:var(--sh-bg)}
+  .t-medium{color:var(--me-fg);border-color:var(--me-bd);background:var(--me-bg)}
+  .t-long{color:var(--lg-fg);border-color:var(--lg-bd);background:var(--lg-bg)}
+  .pill.f{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-tint);letter-spacing:.04em}
+  .paystrip{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 0;padding:11px 14px;border:1px solid var(--gold-dim);background:var(--gold-tint);border-radius:8px}
+  .paystrip .big{font:600 15px var(--sans);color:var(--gold)}
+  .pill.l-liquid{color:var(--hi-fg);border-color:var(--hi-bd);background:var(--hi-bg)}
+  .pill.l-active{color:var(--me-fg);border-color:var(--me-bd);background:var(--me-bg)}
+  .pill.l-thin{color:var(--mid-fg);border-color:var(--mid-bd);background:var(--mid-bg)}
+  .pill.l-none{color:var(--lo-fg);border-color:var(--lo-bd);background:var(--lo-bg)}
+  .yld{color:var(--gold);font-weight:600}
+  .empty{padding:50px 20px;text-align:center;color:var(--text-dim)}
+  .more{padding:14px;text-align:center}
+  /* drawer */
+  .veil{position:fixed;inset:0;background:var(--veil);display:none;z-index:40}
+  .veil.open{display:block}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100vw);background:var(--surface);border-left:1px solid var(--border);z-index:50;transform:translateX(100%);transition:transform .18s;overflow-y:auto;padding:22px 22px 60px}
+  .drawer.open{transform:none}
+  .dh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .dh h2{font-family:var(--serif);font-size:22px;margin:0 0 4px}
+  .x{background:none;border:none;color:var(--text-dim);font-size:26px;line-height:1;cursor:pointer}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 4px}
+  h3{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-faint);margin:22px 0 8px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .cell{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+  .cell .k{font-size:10.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em}
+  .cell .v{font-family:var(--mono);font-size:15px;margin-top:3px}
+  .cell .n{font-size:10.5px;color:var(--text-faint);margin-top:2px}
+  .note{font-size:12px;color:var(--text-dim);line-height:1.5;margin:8px 0}
+  .warn{border:1px solid var(--mid-bd);background:var(--mid-bg);border-radius:8px;padding:9px 12px;font-size:12px;color:var(--mid-fg);margin:10px 0;line-height:1.5}
+  .ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
+  .ctl label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--text-dim)}
+  .ctl label.row{flex-direction:row;align-items:center;gap:6px}
+  .kv{width:100%} .kv td{padding:7px 0;font-size:13px} .kv td:last-child{text-align:right;font-family:var(--mono)}
+  .kv tr.tot td{font-weight:600;font-size:15px;color:var(--gold)}
+  .mini th,.mini td{padding:7px 9px;font-size:12px}
+  .mini{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .box{max-height:230px;overflow-y:auto;border:1px solid var(--border);border-radius:8px}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--gold-dim);padding:10px 16px;border-radius:8px;font-size:13px;z-index:80;display:none;max-width:90vw}
+  dialog{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:22px;width:min(520px,94vw)}
+  dialog::backdrop{background:var(--veil-dlg)}
+  dialog h2{font-family:var(--serif);margin:0 0 10px;font-size:20px}
+  dialog label{display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--text-dim);margin:10px 0}
+  dialog input{width:100%}
+  .tgt{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+  @media (max-width:720px){ .grid{grid-template-columns:repeat(2,1fr)} header{flex-direction:column;align-items:flex-start} }
+
+  /* ===== templates: html[data-template] swaps palette, type, shape and density ===== */
+  html[data-template="clean"]{--sans:"Inter",system-ui,-apple-system,sans-serif;--mono:"Inter",system-ui,sans-serif;--serif:"Inter",system-ui,sans-serif;}
+  html[data-template="clean"]{color-scheme:dark;--bg:#0A1024;--surface:#101A38;--surface-2:#16224A;--border:#263563;--border-soft:#1D2A52;--text:#E8EDFB;--text-dim:#A5B2D8;--text-faint:#8593BE;--gold:#7F9BFF;--gold-dim:#3A4FA6;--gold-hover:#9DB2FF;--gold-tint:rgba(127,155,255,.13);--on-gold:#0A1024;--row-hover:rgba(127,155,255,.08);--green:#34D399;--red:#FB7185;--blue:#7F9BFF;--orange:#FBBF24;--violet:#B7A8FF;--veil:rgba(3,6,18,.66);--veil-dlg:rgba(3,6,18,.74);}
+  @media (prefers-color-scheme:light){ html[data-template="clean"]:not([data-theme="dark"]){color-scheme:light;--bg:#EEF2FC;--surface:#FFFFFF;--surface-2:#F5F7FD;--border:#D8E0F4;--border-soft:#E8EDF9;--text:#0B1530;--text-dim:#3B4C75;--text-faint:#52628A;--gold:#1C3FC4;--gold-dim:#A9B9EE;--gold-hover:#152F9C;--gold-tint:rgba(28,63,196,.08);--on-gold:#FFFFFF;--row-hover:#EBF0FC;--green:#0B7A4B;--red:#C42B2B;--blue:#1C3FC4;--orange:#B45309;--violet:#6D4FD8;--veil:rgba(11,21,48,.4);--veil-dlg:rgba(11,21,48,.5);} }
+  html[data-template="clean"][data-theme="light"]{color-scheme:light;--bg:#EEF2FC;--surface:#FFFFFF;--surface-2:#F5F7FD;--border:#D8E0F4;--border-soft:#E8EDF9;--text:#0B1530;--text-dim:#3B4C75;--text-faint:#52628A;--gold:#1C3FC4;--gold-dim:#A9B9EE;--gold-hover:#152F9C;--gold-tint:rgba(28,63,196,.08);--on-gold:#FFFFFF;--row-hover:#EBF0FC;--green:#0B7A4B;--red:#C42B2B;--blue:#1C3FC4;--orange:#B45309;--violet:#6D4FD8;--veil:rgba(11,21,48,.4);--veil-dlg:rgba(11,21,48,.5);}
+  /* every other colour is derived from the core palette, so a template only names 14 values */
+  html[data-template]:not([data-template="midnight"]){
+    --hi-fg:var(--green);--hi-bd:color-mix(in srgb,var(--green) 40%,transparent);--hi-bg:color-mix(in srgb,var(--green) 10%,transparent);
+    --mid-fg:var(--orange);--mid-bd:color-mix(in srgb,var(--orange) 40%,transparent);--mid-bg:color-mix(in srgb,var(--orange) 10%,transparent);
+    --lo-fg:var(--red);--lo-bd:color-mix(in srgb,var(--red) 40%,transparent);--lo-bg:color-mix(in srgb,var(--red) 10%,transparent);
+    --sh-fg:var(--orange);--sh-bd:color-mix(in srgb,var(--orange) 40%,transparent);--sh-bg:color-mix(in srgb,var(--orange) 10%,transparent);
+    --me-fg:var(--blue);--me-bd:color-mix(in srgb,var(--blue) 40%,transparent);--me-bg:color-mix(in srgb,var(--blue) 10%,transparent);
+    --lg-fg:var(--violet);--lg-bd:color-mix(in srgb,var(--violet) 40%,transparent);--lg-bg:color-mix(in srgb,var(--violet) 10%,transparent);
+    --buy-bg:color-mix(in srgb,var(--green) 14%,transparent);--buy-bd:color-mix(in srgb,var(--green) 45%,transparent);--buy-fg:var(--green);
+    --sell-bg:color-mix(in srgb,var(--red) 14%,transparent);--sell-bd:color-mix(in srgb,var(--red) 45%,transparent);--sell-fg:var(--red);
+    --kite-bg:color-mix(in srgb,var(--blue) 16%,transparent);--kite-bd:color-mix(in srgb,var(--blue) 50%,transparent);--kite-fg:var(--blue);
+    --bad-bd:color-mix(in srgb,var(--red) 45%,transparent);--bad-fg:var(--red);--bad-bg:color-mix(in srgb,var(--red) 8%,transparent);
+  }
+  html[data-template]:not([data-template="midnight"]) .num{font-variant-numeric:tabular-nums}
+
+  /* ---- Ledger: ruled paper, ink and a red margin rule ---- */
+
+  /* ---- Clean: bright, airy, soft shadows, rounded ---- */
+  html[data-template="clean"] body{font-size:14.5px}
+  html[data-template="clean"] header{border-bottom:0;padding-bottom:6px}
+  html[data-template="clean"] .brand-mark{font:700 30px var(--sans);letter-spacing:-.03em}
+  html[data-template="clean"] .brand-mark span{font:500 15px var(--sans);font-style:normal;color:var(--text-faint);letter-spacing:0}
+  html[data-template="clean"] .brand-sub,html[data-template="clean"] .sub,html[data-template="clean"] .banner{font-family:var(--sans)}
+  html[data-template="clean"] .banner{border:0;border-radius:12px;background:var(--surface);box-shadow:0 1px 2px color-mix(in srgb,var(--text) 8%,transparent);font-size:13px}
+  html[data-template="clean"] .tabs{border-bottom:0;gap:6px;margin-bottom:16px}
+  html[data-template="clean"] .tab{border:0;border-radius:99px;padding:8px 18px;margin:0}
+  html[data-template="clean"] .tab.active{background:var(--gold);color:var(--on-gold)}
+  html[data-template="clean"] th,html[data-template="clean"] h3,html[data-template="clean"] .stat-label,html[data-template="clean"] .cell .k{text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500}
+  html[data-template="clean"] th{background:transparent;padding:14px 14px;border-bottom:1px solid var(--border)}
+  html[data-template="clean"] td{padding:15px 14px;border-bottom:1px solid var(--border-soft)}
+  html[data-template="clean"] .scroll{border:0;border-radius:16px;box-shadow:0 1px 2px color-mix(in srgb,var(--text) 6%,transparent),0 12px 32px color-mix(in srgb,var(--text) 7%,transparent)}
+  html[data-template="clean"] .cell,html[data-template="clean"] .warn,html[data-template="clean"] .mini,html[data-template="clean"] .box,html[data-template="clean"] .paystrip{border-radius:12px}
+  html[data-template="clean"] select,html[data-template="clean"] input,html[data-template="clean"] .btn{border-radius:10px}
+  html[data-template="clean"] .pill,html[data-template="clean"] .chip{text-transform:lowercase;display:inline-block;border-radius:99px;font-family:var(--sans);font-weight:500;letter-spacing:0}
+  html[data-template="clean"] .pill::first-letter,html[data-template="clean"] .chip::first-letter{text-transform:uppercase}
+  html[data-template="clean"] .drawer{border-radius:20px 0 0 20px}
+  html[data-template="clean"] dialog{border-radius:18px}
+
+  /* ---- Terminal: dense, monospace, square ---- */
+
+  /* ---- Soft: rounded, friendly, larger type ---- */
+
+  /* ratings stay in capitals (AAA, BBB) in every template */
+  html[data-template] .pill[class*=" r-"]{text-transform:none!important}
+  html[data-template] .pill[class*=" r-"]::first-letter{text-transform:none!important}
+
+
+  /* ---- fluid feel (Apple design rules): instant press feedback, reversible motion ---- */
+  html{touch-action:manipulation}
+  .btn,.chip,.tab,.linkbtn{transition:transform 90ms ease-out,background-color .15s,border-color .15s,color .15s}
+  .btn:active,.chip:active,.tab:active{transform:scale(.97)}
+  tbody tr.row:active{background:var(--gold-tint)}
+  .drawer{transition:transform .3s cubic-bezier(.22,1,.36,1);will-change:transform}
+  .veil{display:block;opacity:0;pointer-events:none;transition:opacity .3s cubic-bezier(.22,1,.36,1)}
+  .veil.open{opacity:1;pointer-events:auto}
+  dialog[open]{animation:materialize .2s cubic-bezier(.22,1,.36,1)}
+  @keyframes materialize{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+  .dh h2,h2{letter-spacing:-.015em;line-height:1.2}
+  @media (pointer:coarse){.btn,.chip,.tab,select,input[type=text],input[type=number]{min-height:44px}}
+  @media (prefers-reduced-motion:reduce){
+    .drawer{transform:none;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility 0s .2s}
+    .drawer.open{opacity:1;visibility:visible;transition:opacity .2s ease}
+    dialog[open]{animation:none}
+    .btn:active,.chip:active,.tab:active{transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand-mark">Ledger <span>— bond screener</span></div>
+      <div class="brand-sub" id="asOf">loading NSE data…</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Theme</div><select id="theme" aria-label="Colour theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></div>
+      <div class="stat"><div class="stat-label">Practice cash</div><div class="stat-value" id="stCash">₹0</div></div>
+      <div class="stat"><div class="stat-label">Portfolio value</div><div class="stat-value" id="stPort">₹0</div></div>
+      <div class="stat"><div class="stat-label">Total return</div><div class="stat-value gold" id="stRet">0.00%</div></div>
+    </div>
+  </header>
+
+  <div class="banner">
+    <span><b>Decide here, trade on Kite.</b> Prices are from NSE’s public bond feed (last traded, else last close). Nothing here places a real order.</span>
+    <span class="spacer"></span>
+    <button class="linkbtn" id="refreshBtn">Refresh from NSE</button>
+    <button class="linkbtn" id="importBtn" title="CSV with columns isin plus frequency (monthly, quarterly, semi-annual, annual) and/or security (senior secured, senior unsecured, subordinated, perpetual)">Import frequencies / seniority (CSV)</button>
+    <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none">
+    <button class="linkbtn" id="settingsBtn">Kite settings</button>
+    <button class="linkbtn" id="resetBtn">Reset practice account</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="market">Market</button>
+    <button class="tab" data-view="portfolio">Portfolio</button>
+    <button class="tab" data-view="orders">Orders</button>
+  </div>
+
+  <div class="view active" id="view-market">
+    <div class="chips" id="terms"></div>
+    <div class="filters">
+      <input type="text" id="q" placeholder="Search name, symbol or ISIN" style="min-width:220px">
+      <select id="fType">
+        <option value="">All bond types</option>
+        <option value="GS">Government securities</option>
+        <option value="SDL">State development loans</option>
+        <option value="TB">Treasury bills</option>
+        <option value="CORP">Corporate &amp; PSU bonds</option>
+      </select>
+      <select id="fCat"><option value="">All issuers</option><option>Sovereign</option><option>State</option><option>PSU</option><option>Corporate</option></select>
+      <select id="fRating">
+        <option value="">All ratings</option><option value="SOV">Sovereign</option><option value="AAA">AAA</option>
+        <option value="AA">AA band (AA+ to AA-)</option><option value="A">A band and below</option><option value="NR">Not rated in feed</option>
+        <option value="AAup">AA- and above (incl. sovereign)</option>
+      </select>
+      <label class="dim" style="font-size:12px">Min yield <input type="number" id="minY" step="0.5" min="0" placeholder="%" style="width:70px"></label>
+      <select id="fLiq" title="Based on how many of the last 30 trading sessions the bond traded on NSE">
+        <option value="tradable" selected>Traded in last 30 sessions</option><option value="active">Active or liquid only</option>
+        <option value="liquid">Liquid only</option><option value="">Include bonds that never trade</option>
+      </select>
+      <select id="fSort">
+        <option value="ytm">Sort: Yield / CAGR (high to low)</option>
+        <option value="cpn">Sort: Coupon (high to low)</option>
+        <option value="mat">Sort: Maturity (soonest)</option>
+        <option value="matFar">Sort: Maturity (furthest)</option>
+        <option value="liq">Sort: Liquidity (days traded)</option>
+        <option value="val">Sort: Traded value today</option>
+        <option value="price">Sort: Price (low to high)</option>
+        <option value="name">Sort: Name (A to Z)</option>
+      </select>
+      <select id="fSec" title="Seniority is not in NSE’s feed. This filters on the ones you have confirmed.">
+        <option value="">Any seniority</option><option>Senior secured</option><option>Senior unsecured</option>
+        <option>Subordinated (Tier II)</option><option>Perpetual / AT1</option><option value="unset">Corporate, not confirmed</option>
+      </select>
+      <select id="fPay" title="How often interest is paid">
+        <option value="">Any payout schedule</option><option value="12">Monthly</option><option value="4">Quarterly</option>
+        <option value="2">Semi-annual</option><option value="1">Annual</option><option value="0">At maturity (no interest)</option>
+      </select>
+      <label class="chk" title="Hide bonds whose payment frequency is only assumed. Frequencies you set yourself count as confirmed."><input type="checkbox" id="fConf"> Confirmed payout schedule only</label>
+      <label class="chk"><input type="checkbox" id="fLive"> Traded today only</label>
+      <label class="chk" title="Amortising, part-redeemed and zero-coupon corporate bonds, where NSE’s data does not allow a reliable yield"><input type="checkbox" id="fFlag"> Include bonds with unreliable yield data</label>
+    </div>
+    <div class="meta" id="meta"></div>
+    <div class="scroll">
+      <table>
+        <thead><tr>
+          <th class="l">Bond</th><th>Term</th><th>Rating</th><th>Issuer type</th><th>Coupon · payout</th><th>Price</th><th>Day Δ</th>
+          <th title="Annualised return if bought now and held to maturity, with accrued interest included">Yield (CAGR)</th>
+          <th>Current yield</th><th>Maturity</th><th>Left</th><th title="How often it traded on NSE in the last 30 sessions">Liquidity</th><th title="Traded value on NSE today">Traded ₹</th><th></th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" style="display:none">No bonds match these filters.</div>
+      <div class="more" id="more" style="display:none"><button class="btn" id="moreBtn">Show more</button></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-portfolio"><div class="scroll"><table>
+    <thead><tr><th class="l">Bond</th><th>Qty</th><th>Avg cost</th><th>Current price</th><th>Market value</th><th>Unrealized P&amp;L</th><th>P&amp;L %</th><th></th></tr></thead>
+    <tbody id="pRows"></tbody></table><div class="empty" id="pEmpty">No open positions. Open a bond and use Practice buy.</div></div></div>
+
+  <div class="view" id="view-orders"><div class="scroll"><table>
+    <thead><tr><th class="l">Date</th><th class="l">Bond</th><th>Type</th><th>Qty</th><th>Price</th><th>Amount</th><th>Realized P&amp;L</th></tr></thead>
+    <tbody id="oRows"></tbody></table><div class="empty" id="oEmpty">No orders yet.</div></div></div>
+</div>
+
+<div class="veil" id="veil"></div>
+<aside class="drawer" id="drawer" aria-label="Bond details"></aside>
+<div class="toast" id="toast"></div>
+
+<dialog id="settings">
+  <h2>Kite settings</h2>
+  <p class="note">The <b>Buy on Kite</b> button always copies the bond's NSE symbol and opens Kite. If you also have a Kite Connect app, paste its API key and the button will open Kite with this order pre-filled in a basket. You still review and confirm every order inside Kite. Nothing is sent anywhere else, and the key is stored only in this browser.</p>
+  <label>Kite Connect API key (optional)<input type="text" id="kiteKey" autocomplete="off" placeholder="e.g. a1b2c3d4e5f6"></label>
+  <div class="tgt"><button class="btn" id="setCancel">Cancel</button><button class="btn btn-primary" id="setSave">Save</button></div>
+</dialog>
+
+<dialog id="tradeDlg">
+  <h2 id="tdTitle"></h2><div class="note" id="tdSub"></div>
+  <label>Quantity (units)<input type="text" inputmode="numeric" id="tdQty"></label>
+  <div class="note" id="tdInfo"></div><div class="note neg" id="tdErr"></div>
+  <div class="tgt"><button class="btn" id="tdCancel">Cancel</button><button class="btn btn-primary" id="tdGo">Confirm</button></div>
+</dialog>
+
+<script>
+(function(){
+const START = 1000000, TDS = 0.10;
+const KEY = {theme:'ledger3_theme', pos:'ledger3_pos', ord:'ledger3_ord', cash:'ledger3_cash', amt:'ledger3_amt', kite:'ledger3_kite', freq:'ledger3_freq', sec:'ledger3_sec'};
+const RANKS = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-'];
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+let bonds = [], byId = {}, meta = {};
+let positions = store.get(KEY.pos, {}), orders = store.get(KEY.ord, []), cash = store.get(KEY.cash, START);
+let defAmt = store.get(KEY.amt, 100000), kiteKey = store.get(KEY.kite, '');
+let term = '', shown = 100;
+let freqOv = store.get(KEY.freq, {});
+let secOv = store.get(KEY.sec, {});
+const SEC = {
+  'Senior secured': 'Backed by specific assets and repaid ahead of unsecured lenders if the issuer fails.',
+  'Senior unsecured': 'No claim on specific assets, but repaid ahead of subordinated bonds.',
+  'Subordinated (Tier II)': 'Repaid only after senior lenders, so it carries more risk and usually a higher coupon.',
+  'Perpetual / AT1': 'No fixed maturity, and the issuer may skip coupons or write down principal. The riskiest rank.'
+};
+const SEC_WORDS = [[/perpetual|at1|additional tier/, 'Perpetual / AT1'], [/subordinat|tier ?(ii|2)/, 'Subordinated (Tier II)'], [/unsecured/, 'Senior unsecured'], [/secured/, 'Senior secured']];
+const secFromWord = w => (SEC_WORDS.find(([re]) => re.test(String(w || '').toLowerCase())) || [])[1];
+
+// ---------- formatting / dates ----------
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = (n, d=2) => isFinite(n) ? (n<0?'−':'') + '₹' + Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d}) : '—';
+const inr0 = n => inr(n, 0);
+const pc = (n, d=2) => isFinite(n) && n !== null ? n.toFixed(d) + '%' : '—';
+const sgn = (n, f) => `<span class="${n>=0?'pos':'neg'}">${n>=0?'+':'−'}${f(Math.abs(n))}</span>`;
+const compact = n => n >= 1e7 ? (n/1e7).toFixed(2)+' Cr' : n >= 1e5 ? (n/1e5).toFixed(2)+' L' : n >= 1e3 ? (n/1e3).toFixed(1)+' K' : String(Math.round(n));
+const TODAY = (()=>{ const d = new Date(); return new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); })();
+const parse = s => { const [y,m,d] = s.split('-').map(Number); return new Date(Date.UTC(y, m-1, d)); };
+const days = (a, b) => (b - a) / 864e5;
+function addMonths(d, k){
+  const t = d.getUTCFullYear()*12 + d.getUTCMonth() + k, y = Math.floor(t/12), m = ((t%12)+12)%12;
+  const last = new Date(Date.UTC(y, m+1, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m, Math.min(d.getUTCDate(), last)));
+}
+const fmtD = d => d.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric', timeZone:'UTC'});
+const FREQ = {1:'Annual', 2:'Semi-annual', 4:'Quarterly', 12:'Monthly'};
+function left(b){
+  const m = Math.round(days(TODAY, parse(b.mat)) / 30.44);
+  return m < 12 ? m + ' mo' : (m/12).toFixed(1) + ' yr';
+}
+
+// ---------- bond maths ----------
+function termOf(b){ const y = days(TODAY, parse(b.mat)) / 365.25; return y < 1 ? 'short' : y < 3 ? 'medium' : 'long'; }
+const TERM = {short:'Short (<12 mo)', medium:'Medium (1–3 yr)', long:'Long (3+ yr)'};
+const FREQ_UP = {1:'ANNUAL', 2:'SEMI-ANNUAL', 4:'QUARTERLY', 12:'MONTHLY'};
+const FREQ_ADV = {1:'once a year', 2:'twice a year', 4:'every 3 months', 12:'every month'};
+function payPill(b, f){
+  if (!b.cpn) return '<span class="pill f" title="No interest payments: bought at a discount, redeemed at face value">AT MATURITY</span>';
+  const why = {standard: '', assumed: ' (assumed: the payment frequency is not in NSE’s bond feed)', inferred: ' (confirmed: NSE’s next-payout date is more than 6 months away)', observed: ' (confirmed from the payments this bond actually made, per NSE filings)', filed: ' (stated in the issuer’s ISIN filing on NSE)', user: ' (set by you)'}[b.fSrc];
+  return `<span class="pill f" title="Interest is paid ${FREQ_ADV[f]}${why}">${FREQ_UP[f]}${b.fSrc === 'assumed' ? '*' : ''}</span>`;
+}
+const LIQ_LABEL = {liquid: 'LIQUID', active: 'ACTIVE', thin: 'THIN', none: 'NO TRADES'};
+function liqTier(b){ const l = b.liq; if (!l) return null; return l.days >= 15 ? 'liquid' : l.days >= 5 ? 'active' : l.days >= 1 ? 'thin' : 'none'; }
+function liqText(b){ const l = b.liq; if (!l) return 'Trading history still loading'; return `Traded on ${l.days} of the last ${l.sessions} sessions` + (l.turnover ? `, ₹${compact(l.turnover)} in total` : ', nothing at all'); }
+function unitName(b){ return b.kind === 'TB' ? 'T-Bill' : b.kind === 'GS' ? 'G-Sec' : b.kind === 'SDL' ? 'SDL' : 'Bond'; }
+
+// Coupon dates stepping back from maturity. Returns {future[], prev} for the given as-of date.
+function grid(b, f, asOf){
+  const mat = parse(b.mat);
+  if (!b.cpn) return {future:[mat], prev:null};
+  const step = 12 / f, out = [];
+  for (let k = 0; k < 1500; k++){ const d = addMonths(mat, -k*step); out.push(d); if (d <= asOf) break; }
+  const prev = out[out.length-1] <= asOf ? out.pop() : null;
+  return {future: out.reverse(), prev};
+}
+function accruedAt(b, f, asOf){
+  if (!b.cpn) return 0;
+  const g = grid(b, f, asOf);
+  if (!g.prev || !g.future.length) return 0;
+  return b.face * b.cpn / 100 / f * days(g.prev, asOf) / days(g.prev, g.future[0]);
+}
+function irr(flows, dirty){
+  const pv = r => flows.reduce((s, c) => s + c.amt / Math.pow(1+r, c.t), 0) - dirty;
+  let lo = -0.9, hi = 5;
+  if (pv(lo) < 0 || pv(hi) > 0) return null;
+  for (let i = 0; i < 60; i++){ const mid = (lo+hi)/2; pv(mid) > 0 ? lo = mid : hi = mid; }
+  return (lo+hi)/2*100;
+}
+function analyse(b, f){
+  f = f || b.freq;
+  const g = grid(b, f, TODAY), per = b.face * b.cpn / 100 / (b.cpn ? f : 1);
+  const acc = accruedAt(b, f, TODAY), dirty = b.price + acc;
+  const flows = g.future.map((d, i) => ({d, t: days(TODAY, d)/365, amt: (b.cpn ? per : 0) + (i === g.future.length-1 ? b.face : 0)}));
+  return {f, dates: g.future, per, acc, dirty, flows, ytm: (b.flag || days(TODAY, parse(b.mat)) < 90) ? null : irr(flows, dirty),
+          cy: b.cpn ? b.face * b.cpn / 100 / b.price * 100 : 0, yrs: days(TODAY, parse(b.mat))/365.25};
+}
+function prep(b){
+  const ratio = b.price / b.face;
+  b.flag = null;
+  if (b.kind === 'CORP' && !b.cpn) b.flag = 'Zero-coupon bond: the amount it redeems for is not in NSE’s bond feed, so its yield cannot be computed.';
+  else if (ratio < 0.7 || ratio > 1.4) b.flag = 'The price is far from the listed face value. This is usually an amortising or part-redeemed bond (NSE shows the original face value, not the principal still outstanding), so the yield cannot be computed reliably.';
+  if (b.freq0 === undefined) b.freq0 = b.freq;
+  b.freq = b.freq0; b.fSrc = b.kind === 'CORP' ? 'assumed' : 'standard';
+  if (b.kind === 'CORP' && b.nxt && days(TODAY, parse(b.nxt)) / 30.44 > 6.2){ b.freq = 1; b.fSrc = 'inferred'; }
+  if (b.fFile && b.cpn){ b.freq = b.fFile; b.fSrc = 'filed'; }
+  if (b.fObs && b.cpn){ b.freq = b.fObs; b.fSrc = 'observed'; }
+  if (freqOv[b.id] && b.cpn){ b.freq = freqOv[b.id]; b.fSrc = 'user'; }
+  b.a = b.price ? analyse(b) : null; b.term = termOf(b); b.liqTier = liqTier(b);
+}
+
+// Hold-to-maturity or sell-after-N-months scenario.
+function scenario(b, a, amt, tds, months, mode, custom){
+  const f = a.f, mat = parse(b.mat), units = Math.floor(amt / a.dirty);
+  if (!units) return null;
+  const invest = units * a.dirty, t = tds ? 1 - TDS : 1;
+  let end = months === null ? mat : addMonths(TODAY, months);
+  const atMat = end >= mat; if (atMat) end = mat;
+  const g = grid(b, f, TODAY);
+  const paid = g.future.filter(d => d <= end).length;
+  const coupons = units * (b.cpn ? a.per : 0) * paid * t;
+  let proceeds, salePrice = null;
+  if (atMat){ proceeds = units * b.face; }
+  else {
+    const frac = days(TODAY, end) / days(TODAY, mat);
+    salePrice = mode === 'par' ? b.price + (b.face - b.price) * frac : mode === 'custom' ? b.face * custom / 100 : b.price;
+    proceeds = units * (salePrice + accruedAt(b, f, end));
+  }
+  const total = coupons + proceeds, gain = total - invest, d = Math.max(days(TODAY, end), 1);
+  return {units, invest, left: amt - invest, end, atMat, paid, coupons, salePrice, proceeds, total, gain,
+          ret: gain / invest * 100, ann: (Math.pow(total / invest, 365 / d) - 1) * 100};
+}
+
+// ---------- data ----------
+async function load(force){
+  $('asOf').textContent = force ? 'refreshing from NSE…' : 'loading NSE data…';
+  try{
+    const r = await fetch('/api/bonds' + (force ? '?refresh=1' : ''));
+    const d = await r.json();
+    bonds = (d.bonds || []);
+    meta = d;
+    bonds.forEach(b => { b.id = b.isin; prep(b); });
+    issuerGroups = {};
+    bonds.forEach(b => { if (b.issuer) (issuerGroups[normIss(b.issuer)] ||= []).push(b); });
+    if (!Object.keys(ABOUT).length){
+      try{ const a = await (await fetch('/about.json')).json(); ABOUT = Object.fromEntries(Object.entries(a.about || {}).map(([k, v]) => [normIss(k), v])); }catch(e){}
+    }
+    byId = Object.fromEntries(bonds.map(b => [b.id, b]));
+    const t = d.asOf ? new Date(d.asOf).toLocaleString('en-IN') : '';
+    $('asOf').textContent = bonds.length ? `NSE · ${bonds.length.toLocaleString('en-IN')} bonds · fetched ${t}` + (d.error ? ' · last refresh failed, showing cached data' : '') + (d.observed ? ` · payout schedule confirmed for ${d.observed.toLocaleString('en-IN')} bonds` : '') + (d.payoutsRunning ? ' (still gathering payment history, refresh in a few minutes)' : '') : 'No data';
+    if (!bonds.length) toast('No bond data: ' + (d.error || 'unknown error'));
+  }catch(e){
+    $('asOf').textContent = 'Cannot reach the server. Start it with: python3 server.py';
+  }
+  renderAll();
+}
+
+// ---------- market ----------
+function ratingGroup(b){ return b.rating === 'SOV' ? 'SOV' : !b.rating ? 'NR' : RANKS.indexOf(b.rating) <= 3 ? 'AA+' : 'A'; }
+let hiddenIlliquid = 0;
+function filtered(skipTerm){
+  hiddenIlliquid = 0;
+  const q = $('q').value.trim().toLowerCase(), ty = $('fType').value, ca = $('fCat').value, ra = $('fRating').value;
+  const minY = parseFloat($('minY').value), live = $('fLive').checked;
+  return bonds.filter(b => {
+    if (!b.a) return false;
+    if (b.flag && !$('fFlag').checked) return false;
+    if (q && !(b.sym + ' ' + b.name + ' ' + (b.issuer || '') + ' ' + (b.issueDesc || '') + ' ' + b.isin).toLowerCase().includes(q)) return false;
+    if (ty && b.kind !== ty) return false;
+    if (ca && b.cat !== ca) return false;
+    if (live && b.src !== 'live') return false;
+    if ($('fPay').value && (b.cpn ? String(b.freq) : '0') !== $('fPay').value) return false;
+    if ($('fConf').checked && b.cpn && b.fSrc === 'assumed') return false;
+    const lv = $('fLiq').value, lt = b.liqTier;
+    if (lv && lt && ({tradable: lt === 'none', active: lt === 'none' || lt === 'thin', liquid: lt !== 'liquid'}[lv])){ hiddenIlliquid++; return false; }
+    const sv = $('fSec').value;
+    if (sv && (sv === 'unset' ? !(b.kind === 'CORP' && !effSec(b)) : effSec(b) !== sv)) return false;
+    if (minY && !(b.a.ytm >= minY)) return false;
+    if (ra){
+      const g = ratingGroup(b);
+      if (ra === 'AAup'){ if (g !== 'SOV' && !(b.rating && RANKS.indexOf(b.rating) <= 3)) return false; }
+      else if (ra === 'AA'){ if (!(b.rating && ['AA+','AA','AA-'].includes(b.rating))) return false; }
+      else if (ra === 'A'){ if (!(b.rating && RANKS.indexOf(b.rating) >= 4) && b.rating !== 'BB' && !(b.rating && !RANKS.includes(b.rating) && b.rating !== 'SOV')) return false; }
+      else if (ra === 'AAA'){ if (b.rating !== 'AAA') return false; }
+      else if (g !== ra) return false;
+    }
+    return skipTerm || !term || b.term === term;
+  });
+}
+const SORTS = {
+  ytm: (a,b) => (b.a.ytm ?? -1e9) - (a.a.ytm ?? -1e9), cpn: (a,b) => b.cpn - a.cpn,
+  mat: (a,b) => parse(a.mat) - parse(b.mat), matFar: (a,b) => parse(b.mat) - parse(a.mat),
+  liq: (a,b) => ((b.liq?.days ?? -1) - (a.liq?.days ?? -1)) || ((b.liq?.turnover ?? 0) - (a.liq?.turnover ?? 0)), val: (a,b) => b.val - a.val, price: (a,b) => a.price/a.face - b.price/b.face, name: (a,b) => a.name.localeCompare(b.name)
+};
+function ratingPill(b){
+  if (b.rating === 'SOV') return '<span class="pill r-hi" title="Sovereign / state government paper">SOV</span>';
+  if (!b.rating) return '<span class="pill r-nr" title="NSE’s bond feed has no rating for this bond. Check the issuer\'s rating letter.">NR</span>';
+  const i = RANKS.indexOf(b.rating);
+  return `<span class="pill ${i >= 0 && i <= 3 ? 'r-hi' : i >= 0 && i <= 8 ? 'r-mid' : 'r-lo'}">${esc(b.rating)}</span>`;
+}
+function renderMarket(){
+  const base = filtered(true);
+  const counts = {short:0, medium:0, long:0}; base.forEach(b => counts[b.term]++);
+  $('terms').innerHTML = [['', 'All terms', base.length], ['short', 'Short term · under 12 months', counts.short],
+    ['medium', 'Medium · 1 to 3 years', counts.medium], ['long', 'Long · 3+ years', counts.long]]
+    .map(([k, l, n]) => `<button class="chip ${term === k ? 'on' : ''}" data-term="${k}">${l}<b>${n.toLocaleString('en-IN')}</b></button>`).join('');
+  const list = (term ? base.filter(b => b.term === term) : base).sort(SORTS[$('fSort').value]);
+  $('meta').textContent = `${list.length.toLocaleString('en-IN')} bonds. Yield (CAGR) = annualised return if bought now and held to maturity, accrued interest included. Click a bond for full details.${hiddenIlliquid ? ` ${hiddenIlliquid.toLocaleString('en-IN')} more are hidden by the liquidity filter.` : ''} * Payment frequency is assumed for corporate bonds (not in NSE’s bond feed).`;
+  $('empty').style.display = list.length ? 'none' : 'block';
+  $('more').style.display = list.length > shown ? 'block' : 'none';
+  $('rows').innerHTML = list.slice(0, shown).map(b => {
+    const stale = b.src !== 'live' ? ` <span class="sub" title="No trade today. Price is the ${b.src === 'prev' ? 'previous close' : 'last close'}.">· ${b.src === 'prev' ? 'prev close' : 'close'}</span>` : '';
+    const y = b.a.ytm;
+    return `<tr class="row" data-id="${esc(b.id)}">
+      <td class="l"><div class="nm" title="${esc(b.issueDesc || '')}">${esc(dispName(b))} <span class="sub">${esc(b.sym)}</span></div><div class="sub">${esc(b.isin)} · ${unitName(b)}${b.cpn ? '' : ' (zero coupon)'}${effSec(b) ? ' · ' + esc(effSec(b)) : ''}</div></td>
+      <td><span class="pill t-${b.term}">${b.term === 'short' ? 'SHORT' : b.term === 'medium' ? 'MEDIUM' : 'LONG'}</span></td>
+      <td>${ratingPill(b)}</td><td>${esc(b.cat)}</td>
+      <td class="num">${b.cpn ? pc(b.cpn) : '—'}<div style="margin-top:3px">${payPill(b, b.freq)}</div></td>
+      <td class="num">${inr(b.price)}${stale}</td>
+      <td class="num">${b.src === 'live' ? sgn(b.chg, v => pc(v)) : '<span class="dim">—</span>'}</td>
+      <td class="num yld" title="${y > 20 ? 'Very high. Usually distress, an illiquid price, or an amortising bond whose remaining principal is below the listed face value. Verify before relying on it.' : ''}">${y === null ? '<span class="dim" title="' + esc(b.flag || 'Under 3 months left: too short to annualise sensibly. Use the calculator for the actual return.') + '">n/a</span>' : pc(y)}${y > 20 ? ' ⚠' : ''}</td>
+      <td class="num">${b.cpn ? pc(b.a.cy) : '—'}</td>
+      <td class="num">${fmtD(parse(b.mat))}${b.matApprox ? ' <span class="sub" title="NSE gives only the maturity year for this bond. Day and month are estimated.">~</span>' : ''}</td>
+      <td class="num">${left(b)}</td>
+      <td>${b.liqTier ? `<span class="pill l-${b.liqTier}" title="${esc(liqText(b))}">${LIQ_LABEL[b.liqTier]}</span><div class="sub">${b.liq.days}/${b.liq.sessions} days</div>` : '<span class="dim">…</span>'}</td>
+      <td class="num">${b.val ? '₹' + compact(b.val) : '—'}</td>
+      <td><button class="btn btn-sm btn-primary" data-open="${esc(b.id)}">Details</button></td></tr>`;
+  }).join('');
+}
+
+// ---------- detail drawer ----------
+let D = null;
+function secInfo(b){
+  if (b.kind === 'CORP' && secOv[b.id]) return [secOv[b.id] + ' (set by you)', SEC[secOv[b.id]]];
+  if (b.kind === 'CORP' && b.secHint) return [b.secHint + ' (from the issue description)', SEC[b.secHint] + ' The issuer’s own description of this bond says so: “' + b.issueDesc + '”.'];
+  if (b.kind === 'GS') return ['Sovereign (Government of India)', 'Backed by the Government of India. Treated as the safest rank in India: no credit risk, only interest-rate (price) risk.'];
+  if (b.kind === 'TB') return ['Sovereign, zero coupon', 'Short-dated Government of India paper. Bought at a discount and redeemed at face value; no interest payments.'];
+  if (b.kind === 'SDL') return ['State government loan', 'Issued by a state government. No state has defaulted on an SDL; they usually yield a little more than G-Secs.'];
+  return ['Not in NSE\'s feed', 'NSE\'s feed does not say whether this is senior secured, senior unsecured or subordinated (Tier II). Security rank decides who is repaid first if the issuer fails. Check the issue\'s information memorandum or the issuer\'s site before buying. Tier II / perpetual / AT1 bonds usually carry noticeably higher coupons for that reason.'];
+}
+const ACRO = new Set(['REC','NHPC','THDC','NTPC','IIFL','HDFC','ICICI','LIC','TVS','UTI','DCB','NIIF','IREDA','SIDBI','NABARD','ESAF','ECL','CEAT','KPI','PVP','SPR','AVP','NDR','SMFG','PNB','HDFC','IRFC','NHAI','UK','AP','IFL','CO','ARC','L&T','A.K.','B.N.']);
+const SMALLW = new Set(['of','and','for','the','in','to']);
+function titleCase(n){
+  if (n !== n.toUpperCase()) return n.replace(/\s+/g, ' ').trim();
+  return n.toLowerCase().replace(/\s+/g, ' ').trim().split(' ').map((w, i) => { const u = w.toUpperCase(); return ACRO.has(u) ? u : (i && SMALLW.has(w)) ? w : w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+}
+const normIss = n => (n || '').toUpperCase().split(/[^A-Z0-9]+/).filter(w => w && !['LIMITED','LTD','PRIVATE','PVT'].includes(w)).join('');
+let ABOUT = {}, issuerGroups = {};
+const dispName = b => b.issuer ? titleCase(b.issuer) : b.name;
+const effSec = b => b.kind === 'CORP' ? (secOv[b.id] || b.secHint || null) : null;
+function aboutHtml(b){
+  let txt = '', note = '';
+  if (b.kind === 'GS') txt = 'Issued by the Government of India through auctions run by the Reserve Bank of India. Carries no credit risk, since the government repays in its own currency. Prices still move with interest rates.';
+  else if (b.kind === 'TB') txt = 'Short-term borrowing by the Government of India. Bought at a discount to face value and redeemed at face value, with no interest payments in between.';
+  else if (b.kind === 'SDL') txt = 'Issued by the ' + esc(b.name.replace(/ State$/, '')) + ' state government to fund its budget and projects. No state has defaulted on an SDL, and they usually yield a little more than G-Secs. SDLs are usually thinly traded.';
+  else {
+    const blurb = ABOUT[normIss(b.issuer || '')];
+    txt = blurb ? esc(blurb) : 'No summary written for this issuer yet.';
+    if (blurb) note = 'Summary written by Claude from general knowledge, not from NSE. It may be out of date, so verify it on the company’s website.';
+  }
+  let facts = '';
+  const g = b.issuer ? issuerGroups[normIss(b.issuer)] : null;
+  if (g && g.length){
+    const traded = g.filter(x => x.liq && x.liq.days > 0).length, rs = [...new Set(g.map(x => x.rating).filter(Boolean))];
+    const cps = g.filter(x => x.cpn).map(x => x.cpn);
+    facts = `<div class="grid" style="margin-top:8px">${cell('Bonds on NSE', g.length, traded ? traded + ' traded in the last 30 sessions' : 'none traded in the last 30 sessions')}
+      ${cell('Ratings in the feed', rs.length ? esc(rs.join(', ')) : 'none', 'across its listed bonds')}
+      ${cell('Coupon range', cps.length ? pc(Math.min(...cps)) + ' – ' + pc(Math.max(...cps)) : '—', esc(b.cat))}</div>`;
+  }
+  const q = encodeURIComponent((b.issuer || b.name) + (b.kind === 'CORP' ? ' company' : ''));
+  return `<h3>About the issuer</h3><div class="note" style="font-size:13px;color:var(--text)">${txt}</div>${note ? `<div class="note">${note}</div>` : ''}${facts}
+    ${b.kind === 'CORP' ? `<div class="actions"><a class="btn btn-sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${q}">Search the company</a></div>` : ''}`;
+}
+const gsearch = q => 'https://www.google.com/search?q=' + encodeURIComponent(q);
+function openDetail(id){
+  const b = byId[id]; if (!b) return;
+  D = {id, amt: defAmt, tds: false, f: b.freq, mode: 'same', custom: Math.round(b.price/b.face*1000)/10, months: 6};
+  const [sec] = secInfo(b);
+  $('drawer').innerHTML = `
+    <div class="dh"><div><h2>${esc(dispName(b))} <span class="dim" style="font-size:14px">${esc(b.sym)}</span></h2>
+      ${b.issueDesc ? `<div style="font-size:13px;margin-bottom:2px">${esc(b.issueDesc)}</div>` : ''}
+      <div class="sub">${esc(b.isin)} · NSE series ${esc(b.series || '—')} · ${unitName(b)}</div></div>
+      <button class="x" id="dClose" aria-label="Close">&times;</button></div>
+    <div class="badges"><span class="pill t-${b.term}">${TERM[b.term]}</span>${ratingPill(b)}
+      <span class="pill r-nr">${esc(b.cat)}</span>${b.agency ? `<span class="pill r-nr">${esc(b.agency)}</span>` : ''}</div>
+    ${aboutHtml(b)}
+    <div id="dStatic"></div>
+    <h3>Calculator: what could I earn?</h3>
+    <div class="ctl">
+      <label>Amount to invest (₹)<input type="text" inputmode="decimal" id="dAmt" value="${D.amt}" style="width:130px"></label>
+      <label title="Choosing a frequency here saves it as confirmed for this bond">Payment frequency ${b.cpn ? '' : '(n/a)'}<select id="dFreq" ${b.cpn ? '' : 'disabled'}>${[1,2,4,12].map(f => `<option value="${f}" ${f === b.freq ? 'selected' : ''}>${FREQ[f]}</option>`).join('')}</select></label>
+      <label class="row"><input type="checkbox" id="dTds" ${b.cpn ? '' : 'disabled'}> Deduct 10% TDS</label>
+    </div>
+    <div id="dDyn"></div>
+    ${b.kind === 'CORP' ? `<h3>Confirm the terms</h3>
+    <div class="note">Payment frequency and seniority are not in NSE’s feed. These open web searches for this ISIN. Once you have the answer, pick the frequency above and it is saved.</div>
+    <div class="actions">
+      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' ' + b.sym + ' information memorandum coupon payment frequency secured unsecured')}">Issue document</a>
+      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' ' + (b.agency || 'CRISIL ICRA CARE').split(',')[0] + ' rating rationale')}">Rating rationale</a>
+      <a class="btn btn-sm" target="_blank" rel="noopener" href="${gsearch(b.isin + ' NCD interest payment dates')}">Payout dates</a>
+    </div>` : ''}
+    <h3>Buy</h3>
+    <div class="actions">
+      <button class="btn btn-kite" id="dKite">Buy on Kite ↗</button>
+      <button class="btn btn-buy" id="dPractice">Practice buy</button>
+    </div>
+    <div class="note" id="kiteNote"></div>`;
+  $('dAmt').oninput = e => { D.amt = parseFloat(e.target.value.replace(/,/g,'')) || 0; renderDyn(); };
+  $('dFreq').onchange = e => {
+    D.f = +e.target.value; freqOv[b.id] = D.f; store.set(KEY.freq, freqOv);
+    prep(b); renderStatic(); renderDyn(); renderMarket();
+  };
+  $('dStatic').onchange = e => {
+    if (e.target.id !== 'dSec') return;
+    if (e.target.value) secOv[b.id] = e.target.value; else delete secOv[b.id];
+    store.set(KEY.sec, secOv); renderStatic(); renderMarket();
+  };
+  $('dStatic').onclick = e => {
+    if (!e.target.closest('#dFreqReset')) return;
+    delete freqOv[b.id]; store.set(KEY.freq, freqOv); prep(b); D.f = b.freq; $('dFreq').value = b.freq;
+    renderStatic(); renderDyn(); renderMarket();
+  };
+  $('dTds').onchange = e => { D.tds = e.target.checked; renderDyn(); };
+  $('dClose').onclick = closeDetail;
+  $('dKite').onclick = () => kite(b);
+  $('dPractice').onclick = () => openTrade(b, 'BUY');
+  renderStatic(); renderDyn();
+  $('veil').classList.add('open'); $('drawer').classList.add('open'); $('drawer').scrollTop = 0;
+}
+function closeDetail(){ $('veil').classList.remove('open'); $('drawer').classList.remove('open'); D = null; }
+function cur(){ const b = byId[D.id]; return [b, analyse(b, D.f)]; }
+function cell(k, v, n){ return `<div class="cell"><div class="k">${k}</div><div class="v">${v}</div>${n ? `<div class="n">${n}</div>` : ''}</div>`; }
+function renderStatic(){
+  const [b, a] = cur(), [sec, secTxt] = secInfo(b);
+  const live = b.src === 'live';
+  const freqMsg = b.kind !== 'CORP' || !b.cpn ? '' : b.fSrc === 'assumed'
+    ? 'How often this bond pays interest is not in NSE’s bond feed. It is assumed <b>' + FREQ[b.freq].toLowerCase() + '</b>; change it below if you know the real schedule. '
+    : b.fSrc === 'observed' ? 'Paid <b>' + FREQ[b.freq].toLowerCase() + '</b>: confirmed from the issuer’s own NSE interest-payment filings (recent due dates: ' + b.fObsDates.map(d => fmtD(parse(d))).join(', ') + '). '
+    : b.fSrc === 'filed' ? 'Paid <b>' + FREQ[b.freq].toLowerCase() + '</b> according to the issuer’s half-yearly ISIN filing on NSE. It was read automatically from a PDF, so verify it if it matters. '
+    : b.fSrc === 'inferred' ? 'Paid <b>annually</b>: confirmed from NSE’s next-payout date, which is more than 6 months away. '
+    : 'Payment frequency set by you (<b>' + FREQ[b.freq].toLowerCase() + '</b>). <button class="linkbtn" id="dFreqReset">Reset</button> ';
+  $('dStatic').innerHTML = `
+    <div class="paystrip">${payPill(b, a.f)}<span class="big">${b.cpn ? 'Interest paid ' + FREQ_ADV[a.f] : 'No interest: paid out in full at maturity'}</span><span class="sub">${b.cpn ? (a.dates.length + ' payments left · ' + inr0(b.face * b.cpn / 100 / a.f) + ' per unit each time') : ''}</span></div>
+    ${b.flag ? `<div class="warn" style="border-color:var(--bad-bd);color:var(--bad-fg);background:var(--bad-bg)"><b>Yield not shown.</b> ${esc(b.flag)}</div>` : ''}
+    <div class="warn" style="${b.matApprox || freqMsg || b.cpnDerived ? '' : 'display:none'}">
+      ${freqMsg}
+      ${b.cpnDerived ? 'NSE leaves this bond’s coupon blank, so <b>' + pc(b.cpn) + '</b> is read from the symbol. Confirm it in the issue document. ' : ''}
+      ${b.matApprox ? 'NSE gives only the maturity <b>year</b> for this bond, so the exact maturity and payout dates are estimated. ' : ''}</div>
+    <h3>What kind of bond is it?</h3>
+    <div class="note"><b style="color:var(--text)">${esc(sec)}.</b> ${esc(secTxt)}</div>
+    ${b.kind === 'CORP' ? `<div class="ctl"><label>Seniority (set it once you have confirmed it)<select id="dSec"><option value="">Not confirmed</option>${Object.keys(SEC).map(k => `<option ${secOv[b.id] === k ? 'selected' : ''}>${k}</option>`).join('')}</select></label></div>` : ''}
+    <div class="note">Remaining life: <b style="color:var(--text)">${left(b)}</b> (${TERM[b.term].toLowerCase()}), matures ${fmtD(parse(b.mat))}${b.matApprox ? ' (approx.)' : ''}.
+      ${b.term === 'short' ? 'Under 12 months, so a short-term holding: the annualised yield can look large because a small gain is scaled up to a full year.' : ''}</div>
+    <h3>Earning right now</h3>
+    <div class="grid">
+      ${cell('Coupon', b.cpn ? pc(b.cpn) : 'None', b.cpn ? `₹${(b.face*b.cpn/100).toLocaleString('en-IN')} a year per unit` : 'sold at a discount')}
+      ${cell('Current yield', b.cpn ? pc(a.cy) : '—', 'coupon ÷ price')}
+      ${cell('Yield to maturity (CAGR)', a.ytm === null ? 'n/a' : pc(a.ytm), a.ytm === null ? (b.flag ? 'see warning above' : 'under 3 months left') : 'annualised, held to maturity')}
+      ${cell('Price', inr(b.price), `${(b.price/b.face*100).toFixed(2)}% of face ${inr0(b.face)}`)}
+      ${cell('Accrued interest', inr(a.acc), 'owed to seller; added to cost')}
+      ${cell('You pay per unit', inr(a.dirty), 'price + accrued')}
+      ${cell('Next payout', a.dates.length && b.cpn ? fmtD(a.dates[0]) : fmtD(parse(b.mat)), b.cpn ? FREQ[a.f].toLowerCase() : 'at maturity')}
+      ${cell('Traded today', b.qty ? b.qty.toLocaleString('en-IN') + ' units' : 'none', b.val ? '₹' + compact(b.val) + (b.hi ? ` · ${b.lo}–${b.hi}` : '') : 'thin market: may be hard to sell')}
+      ${cell('Price source', live ? 'Last traded' : b.src === 'prev' ? 'Previous close' : 'Last close', live ? pc(b.chg) + ' on the day' : 'no trade today')}
+    </div>
+    <h3>Can you actually trade it?</h3>
+    ${b.liq ? `<div class="grid">
+      ${cell('Liquidity', `<span class="pill l-${b.liqTier}">${LIQ_LABEL[b.liqTier]}</span>`, `${b.liq.days} of ${b.liq.sessions} sessions`)}
+      ${cell('Traded in 30 sessions', b.liq.turnover ? '₹' + compact(b.liq.turnover) : 'nothing', b.liq.trades + ' trades')}
+      ${cell('Average per traded day', b.liq.days ? '₹' + compact(b.liq.turnover / b.liq.days) : '—', 'on days it traded')}
+    </div>
+    <div class="warn" style="${b.liqTier === 'liquid' || b.liqTier === 'active' ? 'display:none' : ''}${b.liqTier === 'none' ? ';border-color:var(--bad-bd);color:var(--bad-fg);background:var(--bad-bg)' : ''}">${b.liqTier === 'none'
+      ? '<b>No trades in the last ' + b.liq.sessions + ' sessions.</b> The price above is old, and you may not be able to buy or sell this bond at all, let alone at that price. Treat the yield as theoretical.'
+      : '<b>Thin market.</b> This bond traded only ' + b.liq.days + ' time' + (b.liq.days === 1 ? '' : 's') + ' in ' + b.liq.sessions + ' sessions' + (b.liq.last ? ' (last on ' + fmtD(parse(b.liq.last)) + ')' : '') + '. Expect a wide gap between buy and sell prices, and it may be slow to sell.'}</div>` : '<div class="note">Trading history is still loading. Refresh in a minute.</div>'}`;
+}
+function renderDyn(){
+  const [b, a] = cur();
+  if (b.flag){ $('dDyn').innerHTML = '<div class="note">The return calculator is switched off for this bond because its data in the NSE feed is not reliable enough to compute a payout. Check the issuer\'s term sheet for the real principal, redemption amount and payment dates.</div>'; $('kiteNote').textContent = 'Copies the NSE symbol and opens Kite so you can search for it.'; return; }
+  const r = scenario(b, a, D.amt, D.tds, null);
+  const tdsOn = D.tds && b.cpn;
+  let html = '';
+  if (!r){ html = `<div class="note neg">Amount is below one unit (${inr(a.dirty)}).</div>`; }
+  else {
+    html += `<table class="kv">
+      <tr><td>Units bought at ${inr(a.dirty)} (price + accrued)</td><td>${r.units}</td></tr>
+      <tr><td>Money invested</td><td>${inr(r.invest)}</td></tr>
+      <tr><td>Unused cash (whole units only)</td><td>${inr(r.left)}</td></tr>
+      ${b.cpn ? `<tr><td>Each interest payment${tdsOn ? ' (after TDS)' : ''}</td><td>${inr(r.units * a.per * (tdsOn ? 1 - TDS : 1))}</td></tr>
+      <tr><td>Payments left</td><td>${r.paid}</td></tr>
+      <tr><td>Total interest</td><td>${inr(r.coupons)}</td></tr>` : ''}
+      <tr><td>Face value returned on ${fmtD(parse(b.mat))}</td><td>${inr(r.units * b.face)}</td></tr>
+      <tr class="tot"><td>Total received if held to maturity</td><td>${inr(r.total)}</td></tr>
+      <tr><td>Profit</td><td>${sgn(r.gain, inr)} (${pc(r.ret)}, ${pc(r.ann)} a year)</td></tr></table>
+    <h3>Or sell early</h3>
+    <div class="ctl">
+      <label>If the price then is<select id="dMode"><option value="same">Unchanged from today</option><option value="par">Drifts toward face value</option><option value="custom">A price I choose</option></select></label>
+      <label id="dCustWrap" style="${D.mode === 'custom' ? '' : 'display:none'}">Sell price (% of face)<input type="text" id="dCust" value="${D.custom}" style="width:90px"></label>
+      <label>Custom months<input type="number" id="dMonths" min="1" max="600" value="${D.months}" style="width:80px"></label>
+    </div>
+    <div class="mini"><table><thead><tr><th class="l">Sell after</th><th>Interest</th><th>Sale value</th><th>Total back</th><th>Profit</th><th>Per year</th></tr></thead><tbody>`;
+    const maxM = Math.floor(days(TODAY, parse(b.mat)) / 30.44);
+    [...new Set([3, 6, 12, 24, D.months])].sort((x, y) => x - y).filter(m => m < maxM).forEach(m => {
+      const s = scenario(b, a, D.amt, D.tds, m, D.mode, D.custom);
+      if (s) html += `<tr><td class="l">${m} months <span class="sub">${fmtD(s.end)}</span></td><td class="num">${inr0(s.coupons)}</td><td class="num">${inr0(s.proceeds)}</td><td class="num">${inr0(s.total)}</td><td class="num">${sgn(s.gain, inr0)}</td><td class="num yld">${pc(s.ann)}</td></tr>`;
+    });
+    html += `<tr><td class="l">Hold to maturity</td><td class="num">${inr0(r.coupons)}</td><td class="num">${inr0(r.proceeds)}</td><td class="num">${inr0(r.total)}</td><td class="num">${sgn(r.gain, inr0)}</td><td class="num yld">${pc(r.ann)}</td></tr></tbody></table></div>
+    <div class="note">Selling early depends on the market price then. Bond prices fall when interest rates rise and rise when they fall, and thinly traded bonds may not sell at the price shown. Sale value includes interest accrued up to the sale date. "Per year" compares total money back with money in; the yield to maturity above also assumes coupons are reinvested, so the two differ slightly. Brokerage, taxes (other than the optional TDS) and capital-gains tax are not included.</div>`;
+    {
+      const intr = b.cpn ? r.units * a.per * (tdsOn ? 1 - TDS : 1) : 0, prin = r.units * b.face, n = a.dates.length;
+      html += `<h3>When you get paid · ${b.cpn ? 'interest ' + FREQ[a.f].toLowerCase() + ', ' + FREQ_ADV[a.f] : 'at maturity only'}</h3><div class="box"><table class="mini" style="border:0"><thead><tr><th class="l">#</th><th class="l">Date</th><th>Interest</th><th>Principal</th><th>Total</th></tr></thead><tbody>` +
+        a.dates.map((d, i) => {
+          const p = i === n-1 ? prin : 0;
+          return `<tr><td class="l">${i+1}</td><td class="l">${fmtD(d)}</td><td class="num">${inr(intr)}</td><td class="num">${p ? inr(p) : '—'}</td><td class="num">${inr(intr + p)}</td></tr>`;
+        }).join('') +
+        `<tr style="font-weight:600"><td class="l" colspan="2">Total</td><td class="num">${inr(intr * n)}</td><td class="num">${inr(prin)}</td><td class="num yld">${inr(intr * n + prin)}</td></tr></tbody></table></div>
+        <div class="note">Principal is your face value coming back at maturity.${tdsOn ? ' Interest is shown after 10% TDS.' : ''}</div>`;
+    }
+  }
+  $('dDyn').innerHTML = html;
+  if ($('dMode')){
+    $('dMode').value = D.mode;
+    $('dMode').onchange = e => { D.mode = e.target.value; renderDyn(); };
+    if ($('dCust')) $('dCust').oninput = e => { D.custom = parseFloat(e.target.value) || 0; renderDyn(); $('dCust').focus(); };
+    $('dMonths').oninput = e => { D.months = Math.max(1, parseInt(e.target.value) || 1); renderDyn(); const m = $('dMonths'); m.focus(); m.setSelectionRange?.(m.value.length, m.value.length); };
+  }
+  $('kiteNote').textContent = kiteKey
+    ? `Opens Kite with a limit buy of ${r ? r.units : 0} units at ${inr(b.price)} pre-filled. You confirm it inside Kite.`
+    : 'Copies the NSE symbol and opens Kite so you can search for it. Add a Kite Connect API key in Kite settings to pre-fill the order instead.';
+}
+
+// ---------- Kite ----------
+function kite(b){
+  const a = analyse(b, D ? D.f : b.freq), units = D ? Math.floor(D.amt / a.dirty) : 1;
+  if (kiteKey){
+    const f = document.createElement('form');
+    f.method = 'POST'; f.action = 'https://kite.zerodha.com/connect/basket'; f.target = '_blank';
+    const add = (k, v) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = k; i.value = v; f.appendChild(i); };
+    add('api_key', kiteKey);
+    add('data', JSON.stringify([{variety:'regular', tradingsymbol:b.sym, exchange:'NSE', transaction_type:'BUY', order_type:'LIMIT', price:b.price, quantity:Math.max(units, 1), product:'CNC'}]));
+    document.body.appendChild(f); f.submit(); f.remove();
+    toast('Opened Kite with the order pre-filled. Review and confirm it there. If Kite cannot find the symbol, search ISIN ' + b.isin + '.');
+  } else {
+    try{ navigator.clipboard.writeText(b.sym); }catch(e){}
+    window.open('https://kite.zerodha.com/', '_blank', 'noopener');
+    toast('Copied "' + b.sym + '". Search it in Kite (ISIN ' + b.isin + ').');
+  }
+}
+let toastT;
+function toast(m){ const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(toastT); toastT = setTimeout(() => t.style.display = 'none', 6000); }
+
+// ---------- practice trading ----------
+let T = null;
+function openTrade(b, side){
+  const pos = positions[b.id], held = pos ? pos.qty : 0, p = b.price;
+  T = {b, side, held};
+  $('tdTitle').textContent = (side === 'BUY' ? 'Practice buy: ' : 'Practice sell: ') + b.name + ' ' + b.sym;
+  $('tdSub').textContent = `Price ${inr(p)} per unit. Practice only: no real order is placed.`;
+  const def = side === 'BUY' ? Math.max(1, Math.floor(defAmt / p)) : held;
+  $('tdQty').value = def; $('tdErr').textContent = ''; tdInfo();
+  $('tradeDlg').showModal();
+}
+function tdInfo(){ const q = parseInt($('tdQty').value) || 0, p = T.b.price;
+  $('tdInfo').textContent = `Order value ${inr(q * p)} · ${T.side === 'BUY' ? 'cash ' + inr(cash) : 'held ' + T.held}`; }
+$('tdQty').oninput = tdInfo;
+$('tdCancel').onclick = () => $('tradeDlg').close();
+$('tdGo').onclick = () => {
+  const {b, side, held} = T, q = parseInt($('tdQty').value) || 0, p = b.price, err = m => $('tdErr').textContent = m;
+  if (q < 1) return err('Enter a quantity of at least 1.');
+  if (side === 'BUY'){
+    if (q * p > cash) return err('Not enough practice cash.');
+    const o = positions[b.id] || {qty:0, avg:0, sym:b.sym, name:b.name};
+    positions[b.id] = {...o, qty:o.qty+q, avg:(o.qty*o.avg + q*p)/(o.qty+q)};
+    cash -= q * p; orders.push({ts:Date.now(), type:'buy', id:b.id, name:b.name + ' ' + b.sym, qty:q, price:p, pnl:0});
+  } else {
+    if (q > held) return err('You only hold ' + held + ' units.');
+    const pnl = q * (p - positions[b.id].avg);
+    positions[b.id].qty -= q; if (!positions[b.id].qty) delete positions[b.id];
+    cash += q * p; orders.push({ts:Date.now(), type:'sell', id:b.id, name:b.name + ' ' + b.sym, qty:q, price:p, pnl});
+  }
+  store.set(KEY.pos, positions); store.set(KEY.ord, orders); store.set(KEY.cash, cash);
+  $('tradeDlg').close(); renderPortfolio(); renderOrders(); renderStats();
+};
+const priceOf = (id, p) => byId[id] ? byId[id].price : p.avg;
+function renderPortfolio(){
+  const rows = Object.entries(positions);
+  $('pEmpty').style.display = rows.length ? 'none' : 'block';
+  $('pRows').innerHTML = rows.map(([id, p]) => {
+    const c = priceOf(id, p), pl = p.qty * (c - p.avg);
+    return `<tr><td class="l"><div class="nm">${esc(p.name)} <span class="sub">${esc(p.sym)}</span></div><div class="sub">${esc(id)}</div></td>
+      <td class="num">${p.qty}</td><td class="num">${inr(p.avg)}</td><td class="num">${inr(c)}</td><td class="num">${inr(p.qty*c)}</td>
+      <td class="num">${sgn(pl, inr)}</td><td class="num">${sgn((c/p.avg-1)*100, v => pc(v))}</td>
+      <td><button class="btn btn-sm btn-sell" data-sell="${esc(id)}">Sell</button></td></tr>`; }).join('');
+}
+function renderOrders(){
+  $('oEmpty').style.display = orders.length ? 'none' : 'block';
+  $('oRows').innerHTML = orders.slice().reverse().map(o => `<tr><td class="l num">${new Date(o.ts).toLocaleString('en-IN')}</td><td class="l">${esc(o.name)}</td>
+    <td><span class="${o.type === 'buy' ? 'pos' : 'neg'}"><b>${o.type.toUpperCase()}</b></span></td><td class="num">${o.qty}</td><td class="num">${inr(o.price)}</td>
+    <td class="num">${inr(o.qty*o.price)}</td><td class="num">${o.type === 'sell' ? sgn(o.pnl, inr) : '—'}</td></tr>`).join('');
+}
+function renderStats(){
+  const pv = Object.entries(positions).reduce((s, [id, p]) => s + p.qty * priceOf(id, p), 0), ret = (cash + pv - START) / START * 100;
+  $('stCash').textContent = inr0(cash); $('stPort').textContent = inr0(pv);
+  $('stRet').innerHTML = sgn(ret, v => pc(v));
+}
+const renderAll = () => { renderMarket(); renderPortfolio(); renderOrders(); renderStats(); };
+
+// ---------- events ----------
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + t.dataset.view));
+});
+$('terms').onclick = e => { const c = e.target.closest('[data-term]'); if (c){ term = c.dataset.term; shown = 100; renderMarket(); } };
+['q','fType','fCat','fRating','minY','fSort','fLiq','fLive','fFlag','fPay','fConf','fSec'].forEach(id => $(id).addEventListener(id === 'q' || id === 'minY' ? 'input' : 'change', () => { shown = 100; renderMarket(); }));
+$('moreBtn').onclick = () => { shown += 200; renderMarket(); };
+$('rows').onclick = e => { const r = e.target.closest('tr.row'); if (r) openDetail(r.dataset.id); };
+$('pRows').onclick = e => { const s = e.target.closest('[data-sell]'); if (s && byId[s.dataset.sell]) openTrade(byId[s.dataset.sell], 'SELL'); };
+$('veil').onclick = closeDetail;
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && D) closeDetail(); });
+$('refreshBtn').onclick = () => load(true);
+const FREQ_WORDS = {monthly:12, quarterly:4, 'semi-annual':2, semiannual:2, 'half-yearly':2, halfyearly:2, annual:1, yearly:1, '12':12, '4':4, '2':2, '1':1};
+$('importBtn').onclick = () => $('csvFile').click();
+$('csvFile').onchange = async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  const lines = (await file.text()).replace(/^\uFEFF/, '').split(/\r?\n/).map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g, ''))).filter(r => r.some(Boolean));
+  const head = (lines.shift() || []).map(h => h.toLowerCase());
+  const ci = head.indexOf('isin'), cf = head.findIndex(h => h.startsWith('freq')), cs = head.findIndex(h => h.startsWith('sec'));
+  if (ci < 0 || (cf < 0 && cs < 0)) return toast('The CSV needs a header row with isin plus frequency and/or security columns.');
+  let nf = 0, ns = 0; const bad = [];
+  lines.forEach((r, i) => {
+    const b = byId[(r[ci] || '').toUpperCase()]; let used = false;
+    if (b && cf >= 0){ const f = FREQ_WORDS[(r[cf] || '').toLowerCase()]; if (f && b.cpn){ freqOv[b.id] = f; prep(b); nf++; used = true; } }
+    if (b && cs >= 0){ const sv = secFromWord(r[cs]); if (sv && b.kind === 'CORP'){ secOv[b.id] = sv; ns++; used = true; } }
+    if (!used) bad.push(i + 2);
+  });
+  store.set(KEY.freq, freqOv); store.set(KEY.sec, secOv); renderMarket();
+  toast(`Saved ${nf} payout frequenc${nf === 1 ? 'y' : 'ies'} and ${ns} seniorit${ns === 1 ? 'y' : 'ies'}.` + (bad.length ? ` Skipped line${bad.length > 1 ? 's' : ''} ${bad.slice(0, 8).join(', ')}${bad.length > 8 ? '…' : ''}: unknown ISIN or an unrecognised value.` : ''));
+};
+$('settingsBtn').onclick = () => { $('kiteKey').value = kiteKey; $('settings').showModal(); };
+$('setCancel').onclick = () => $('settings').close();
+$('setSave').onclick = () => { kiteKey = $('kiteKey').value.trim(); store.set(KEY.kite, kiteKey); $('settings').close(); if (D) renderDyn(); };
+$('resetBtn').onclick = () => {
+  if (!confirm('Reset the practice account? This clears positions, orders and cash.')) return;
+  positions = {}; orders = []; cash = START; store.set(KEY.pos, positions); store.set(KEY.ord, orders); store.set(KEY.cash, cash); renderAll();
+};
+$('theme').value = document.documentElement.dataset.theme;
+$('theme').onchange = e => { document.documentElement.dataset.theme = e.target.value; store.set(KEY.theme, e.target.value); };
+load(false);
+})();
+</script>
+</body>
+</html>

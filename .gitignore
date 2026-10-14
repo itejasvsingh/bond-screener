@@ -1,0 +1,8 @@
+# NSE data snapshots and the static build made from them: not for redistribution
+data/
+dist/
+# earlier versions of the page
+legacy/
+__pycache__/
+.omc/
+.DS_Store

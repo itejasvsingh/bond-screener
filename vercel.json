@@ -2,10 +2,7 @@
   "outputDirectory": "dist",
   "functions": {
     "api/chat.py": {
-      "includeFiles": [
-        "api/data/*.json",
-        "rag.py"
-      ]
+      "includeFiles": "{api/data/*.json,rag.py}"
     }
   }
 }

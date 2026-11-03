@@ -47,7 +47,9 @@ jobs:
           rm -rf snap/dist && mkdir snap/dist && cp dist/* snap/dist/
           mkdir -p snap/api
           cp api/chat.py snap/api/chat.py
-          cp -R api/data snap/api/data
+          rm -rf snap/api/data
+          mkdir -p snap/api/data
+          cp api/data/*.json snap/api/data/
           cp rag.py vercel.json snap/
           python -c 'import json; p="snap/vercel.json"; config=json.load(open(p)); config.pop("ignoreCommand", None); open(p,"w").write(json.dumps(config, indent=2) + "\n")'
           cd snap

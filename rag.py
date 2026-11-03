@@ -427,13 +427,29 @@ def answer(question, bonds, about=None):
     if len(question) > MAX_QUESTION_LENGTH:
         raise ChatError("Keep questions to %d characters or fewer." % MAX_QUESTION_LENGTH)
     sources = retrieve(question, bonds, about)
+    config = _model_configuration()
     if not sources:
+        if config:
+            guide_doc = {
+                "id": "guide",
+                "title": GUIDE[0],
+                "text": GUIDE[1] + (
+                    " You are Ask Ledger, a grounded bond research assistant for the Indian bond screener. "
+                    "You answer questions about corporate bonds, government securities (G-Secs), yields, "
+                    "ratings, and issuers based on NSE screener data."
+                ),
+            }
+            response = _generate(question, [guide_doc], config)
+            return {
+                "answer": response,
+                "sources": [{"id": guide_doc["id"], "title": guide_doc["title"], "excerpt": guide_doc["text"]}],
+                "mode": "generated",
+            }
         return {
             "answer": "I couldn't find a relevant bond or issuer record in the current data. Try an issuer, symbol, ISIN, rating, coupon, maturity, or yield question.",
             "sources": [],
             "mode": "retrieval",
         }
-    config = _model_configuration()
     if config:
         response = _generate(question, sources, config)
         mode = "generated"

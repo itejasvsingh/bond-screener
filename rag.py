@@ -324,7 +324,10 @@ def _model_configuration():
     if not url and not model and not key:
         return None
     if not url or not model:
-        raise ChatError("Set both RAG_API_URL and RAG_MODEL to enable generated answers.")
+        raise ChatError(
+            "Missing API key or URL. If using Groq or OpenAI, ensure your API key (GROQ_API_KEY or RAG_API_KEY) "
+            "is added in Vercel for BOTH Production and Preview environments. Otherwise, set both RAG_API_URL and RAG_MODEL."
+        )
     if url.rstrip("/").endswith("/v1"):
         url = url.rstrip("/") + "/chat/completions"
     try:

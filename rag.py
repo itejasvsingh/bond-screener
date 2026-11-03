@@ -331,6 +331,17 @@ def _generate(question, sources, config):
             result = json.loads(response.read(2_000_000).decode("utf-8"))
     except HTTPError as error:
         print("RAG provider returned HTTP %s" % error.code, file=sys.stderr)
+        if error.code == 401:
+            raise ProviderError(
+                "The provider rejected the API key. Verify OPENAI_API_KEY is an active OpenAI key in "
+                "Vercel Production; API_KEY is not used by the chatbot. For another provider, set "
+                "RAG_API_KEY, RAG_API_URL, and RAG_MODEL."
+            ) from None
+        if error.code == 403:
+            raise ProviderError(
+                "The provider denied access to this model. Check the API key's model permissions and "
+                "the configured RAG_MODEL."
+            ) from None
         raise ProviderError("The configured model endpoint returned HTTP %s." % error.code) from None
     except (URLError, TimeoutError, OSError) as error:
         print("RAG provider request failed: %s" % type(error).__name__, file=sys.stderr)

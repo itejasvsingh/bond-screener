@@ -376,6 +376,18 @@ def _generate(question, sources, config):
         print("RAG provider returned HTTP %s" % error.code, file=sys.stderr)
         if details:
             print("Provider response: %s" % details[:200], file=sys.stderr)
+        provider_message = ""
+        if details:
+            try:
+                err_json = json.loads(details)
+                if isinstance(err_json, dict) and "error" in err_json:
+                    err_obj = err_json["error"]
+                    if isinstance(err_obj, dict) and "message" in err_obj:
+                        provider_message = str(err_obj["message"])
+                    elif isinstance(err_obj, str):
+                        provider_message = err_obj
+            except Exception:
+                pass
         if error.code == 401:
             raise ProviderError(
                 "The provider rejected the API key. Verify OPENAI_API_KEY is an active OpenAI key in "
@@ -383,11 +395,17 @@ def _generate(question, sources, config):
                 "RAG_API_KEY, RAG_API_URL, and RAG_MODEL."
             ) from None
         if error.code == 403:
-            raise ProviderError(
+            msg = (
                 "The provider denied access to this model. Check the API key's model permissions and "
                 "the configured RAG_MODEL."
-            ) from None
-        raise ProviderError("The configured model endpoint returned HTTP %s." % error.code) from None
+            )
+            if provider_message:
+                msg += " Provider error: %s" % provider_message
+            raise ProviderError(msg) from None
+        err_msg = "The configured model endpoint returned HTTP %s." % error.code
+        if provider_message:
+            err_msg += " Provider error: %s" % provider_message
+        raise ProviderError(err_msg) from None
     except (URLError, TimeoutError, OSError) as error:
         print("RAG provider request failed: %s" % type(error).__name__, file=sys.stderr)
         raise ProviderError("Could not reach the configured model endpoint.") from None

@@ -284,10 +284,33 @@ def retrieve(question, bonds, about=None, today=None, limit=MAX_RESULTS):
 def _model_configuration():
     url = os.environ.get("RAG_API_URL", "").strip()
     model = os.environ.get("RAG_MODEL", "").strip()
-    key = (os.environ.get("RAG_API_KEY") or os.environ.get("OPENAI_API_KEY") or "").strip()
-    groq_key = (os.environ.get("GROQ_API_KEY") or "").strip()
+    key = (
+        os.environ.get("RAG_API_KEY")
+        or os.environ.get("RAG_KEY")
+        or os.environ.get("OPENAI_API_KEY")
+        or ""
+    ).strip()
+    groq_key = (
+        os.environ.get("GROQ_API_KEY")
+        or os.environ.get("GROQ_KEY")
+        or os.environ.get("GROQ_API")
+        or ""
+    ).strip()
     gemini_key = (os.environ.get("GEMINI_API_KEY") or "").strip()
     generic_key = (os.environ.get("API_KEY") or "").strip()
+
+    if not key and not groq_key and not gemini_key and not generic_key:
+        for env_k, env_v in os.environ.items():
+            val = str(env_v or "").strip()
+            if val.startswith("gsk_"):
+                groq_key = val
+                break
+            elif val.startswith("AIza"):
+                gemini_key = val
+                break
+            elif val.startswith("sk-") and len(val) > 20:
+                key = val
+                break
 
     if not key and groq_key:
         key = groq_key
@@ -325,8 +348,9 @@ def _model_configuration():
         return None
     if not url or not model:
         raise ChatError(
-            "Missing API key or URL. If using Groq or OpenAI, ensure your API key (GROQ_API_KEY or RAG_API_KEY) "
-            "is added in Vercel for BOTH Production and Preview environments. Otherwise, set both RAG_API_URL and RAG_MODEL."
+            "Missing API key. In Vercel Project Settings > Environment Variables, make sure your "
+            "RAG_API_KEY (or GROQ_API_KEY) has the 'Preview' checkbox checked, then click 'Redeploy' "
+            "on the deployment. Otherwise, set both RAG_API_URL and RAG_MODEL."
         )
     if url.rstrip("/").endswith("/v1"):
         url = url.rstrip("/") + "/chat/completions"

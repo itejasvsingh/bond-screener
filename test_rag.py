@@ -3,6 +3,7 @@ import unittest
 from datetime import date
 from http.server import HTTPServer
 from threading import Thread
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 from unittest.mock import patch
 
@@ -73,6 +74,19 @@ class RagTests(unittest.TestCase):
         with patch.dict("os.environ", config, clear=True):
             with self.assertRaisesRegex(rag.ChatError, "valid http"):
                 rag.answer("PFC2030?", self.bonds)
+
+    def test_provider_401_explains_expected_key_without_exposing_it(self):
+        error = HTTPError("https://api.openai.com", 401, "Unauthorized", {}, None)
+        with patch.object(rag, "urlopen", side_effect=error):
+            with self.assertRaises(rag.ProviderError) as raised:
+                rag._generate("question", [], (
+                    "https://api.openai.com/v1/chat/completions",
+                    "gpt-4o-mini",
+                    "secret-test-key",
+                ))
+        self.assertIn("active OpenAI key", str(raised.exception))
+        self.assertIn("API_KEY is not used", str(raised.exception))
+        self.assertNotIn("secret-test-key", str(raised.exception))
 
     def test_configured_provider_generates_from_retrieved_sources(self):
         config = {

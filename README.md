@@ -21,12 +21,15 @@ and yields. Retrieval runs locally against the current NSE bond snapshot and iss
 the records it used. With no model configured, answers remain in local retrieval mode and do not call
 an AI service.
 
-To enable generated answers on Vercel, add an `OPENAI_API_KEY` environment variable in the Vercel
-project settings, then redeploy. The default endpoint is OpenAI chat completions using `gpt-4o-mini`.
-You can optionally override it with `RAG_API_URL`, `RAG_MODEL`, and `RAG_API_KEY`. For another
-OpenAI-compatible provider, configure all three. The server sends only the question and retrieved
-excerpts to the model endpoint; credentials stay on the server and are never sent to the browser. Locally:
+To enable generated answers on Vercel or locally, set an API key:
+- **Groq**: set `GROQ_API_KEY` (defaults to `llama-3.3-70b-versatile` via Groq's high-speed API).
+- **OpenAI**: set `OPENAI_API_KEY` (defaults to `gpt-4o-mini`).
+- **Google Gemini**: set `GEMINI_API_KEY` (defaults to `gemini-2.5-flash`).
 
+You can optionally override the model with `RAG_MODEL` (e.g. `RAG_MODEL=llama-3.1-8b-instant`), or provide custom endpoints with `RAG_API_URL`, `RAG_MODEL`, and `RAG_API_KEY`. The server sends only the question and retrieved excerpts to the model endpoint; credentials stay on the server and are never sent to the browser. Locally:
+
+    GROQ_API_KEY=gsk_... python3 server.py
+    # or with a local model:
     RAG_API_URL=http://localhost:11434/v1/chat/completions RAG_MODEL=llama3.2 python3 server.py
 
 Generated responses are grounded in retrieved excerpts but can still be wrong. The assistant is for

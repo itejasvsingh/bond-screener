@@ -285,10 +285,17 @@ def _model_configuration():
     url = os.environ.get("RAG_API_URL", "").strip()
     model = os.environ.get("RAG_MODEL", "").strip()
     key = (os.environ.get("RAG_API_KEY") or os.environ.get("OPENAI_API_KEY") or "").strip()
+    groq_key = (os.environ.get("GROQ_API_KEY") or "").strip()
     gemini_key = (os.environ.get("GEMINI_API_KEY") or "").strip()
     generic_key = (os.environ.get("API_KEY") or "").strip()
 
-    if not key and gemini_key:
+    if not key and groq_key:
+        key = groq_key
+        if not url:
+            url = "https://api.groq.com/openai/v1/chat/completions"
+        if not model:
+            model = "llama-3.3-70b-versatile"
+    elif not key and gemini_key:
         key = gemini_key
         if not url:
             url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
@@ -297,15 +304,22 @@ def _model_configuration():
     elif not key and generic_key:
         key = generic_key
         if not url:
-            if generic_key.startswith("AIza"):
+            if generic_key.startswith("gsk_"):
+                url = "https://api.groq.com/openai/v1/chat/completions"
+                model = model or "llama-3.3-70b-versatile"
+            elif generic_key.startswith("AIza"):
                 url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
                 model = model or "gemini-2.5-flash"
             else:
                 url = "https://api.openai.com/v1/chat/completions"
                 model = model or "gpt-4o-mini"
     elif key and not url:
-        url = "https://api.openai.com/v1/chat/completions"
-        model = model or "gpt-4o-mini"
+        if key.startswith("gsk_"):
+            url = "https://api.groq.com/openai/v1/chat/completions"
+            model = model or "llama-3.3-70b-versatile"
+        else:
+            url = "https://api.openai.com/v1/chat/completions"
+            model = model or "gpt-4o-mini"
 
     if not url and not model and not key:
         return None

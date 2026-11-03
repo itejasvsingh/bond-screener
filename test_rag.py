@@ -87,6 +87,15 @@ class RagTests(unittest.TestCase):
             "AIzaSy123",
         ))
 
+    def test_groq_key_uses_groq_endpoint(self):
+        with patch.dict("os.environ", {"GROQ_API_KEY": "gsk_test123"}, clear=True):
+            config = rag._model_configuration()
+        self.assertEqual(config, (
+            "https://api.groq.com/openai/v1/chat/completions",
+            "llama-3.3-70b-versatile",
+            "gsk_test123",
+        ))
+
     def test_generic_api_key_autodetects(self):
         with patch.dict("os.environ", {"API_KEY": "AIzaSyTest"}, clear=True):
             config = rag._model_configuration()
@@ -94,6 +103,10 @@ class RagTests(unittest.TestCase):
         with patch.dict("os.environ", {"API_KEY": "sk-proj-test"}, clear=True):
             config = rag._model_configuration()
         self.assertEqual(config[0], "https://api.openai.com/v1/chat/completions")
+        with patch.dict("os.environ", {"API_KEY": "gsk_test456"}, clear=True):
+            config = rag._model_configuration()
+        self.assertEqual(config[0], "https://api.groq.com/openai/v1/chat/completions")
+        self.assertEqual(config[1], "llama-3.3-70b-versatile")
 
     def test_invalid_provider_url_is_reported(self):
         config = {"RAG_API_URL": "https://", "RAG_MODEL": "test-model"}

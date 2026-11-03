@@ -1,7 +1,9 @@
 {
-  "framework": null,
-  "buildCommand": null,
-  "installCommand": null,
+  "ignoreCommand": "exit 0",
   "outputDirectory": "dist",
-  "headers": [{ "source": "/(.*)", "headers": [{ "key": "X-Robots-Tag", "value": "noindex" }] }]
+  "functions": {
+    "api/chat.py": {
+      "includeFiles": ["api/data/*.json", "rag.py"]
+    }
+  }
 }

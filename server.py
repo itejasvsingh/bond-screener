@@ -8,7 +8,7 @@ them, caches the result on disk and serves it. No third-party packages needed.
     python3 server.py            # then open http://localhost:8765
 """
 import html, json, os, re, sys, threading, time
-import filings, issuers, liquidity, payouts
+import filings, issuers, liquidity, payouts, rag
 from datetime import date, datetime
 from http.cookiejar import CookieJar
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -390,6 +390,51 @@ class Handler(SimpleHTTPRequestHandler):
             super().do_GET()
         else:  # nothing else is public: no server.py, no data/, no legacy/
             self.send_error(404)
+
+    def do_POST(self):
+        if urlparse(self.path).path != "/api/chat":
+            self.send_error(404)
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self.send_error(400, "Invalid Content-Length")
+            return
+        if length <= 0 or length > 16_384:
+            self.send_error(413 if length > 16_384 else 400, "Invalid request size")
+            return
+        try:
+            request = json.loads(self.rfile.read(length).decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.send_error(400, "Request body must be valid JSON")
+            return
+        if not isinstance(request, dict):
+            self.send_error(400, "Request body must be a JSON object")
+            return
+        try:
+            data = current()
+            with open(os.path.join(ROOT, "about.json"), encoding="utf-8") as about_file:
+                about_data = json.load(about_file)
+            about = about_data.get("about", {})
+            result = rag.answer(request.get("question"), data.get("bonds", []), about)
+        except rag.ChatError as error:
+            body = json.dumps({"error": str(error)}).encode("utf-8")
+            self.send_response(400)
+        except rag.ProviderError as error:
+            body = json.dumps({"error": str(error)}).encode("utf-8")
+            self.send_response(502)
+        except (OSError, ValueError, TypeError) as error:
+            print("chat request failed:", type(error).__name__, str(error)[:200], file=sys.stderr)
+            body = json.dumps({"error": "The screener data could not be loaded for chat."}).encode("utf-8")
+            self.send_response(500)
+        else:
+            body = json.dumps(result).encode("utf-8")
+            self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
 
     def log_message(self, *a):
         pass

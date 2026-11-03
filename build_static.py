@@ -58,6 +58,11 @@ def main():
         json.dump(data, f, separators=(",", ":"))
     shutil.copy(os.path.join(ROOT, "about.json"), os.path.join(DIST, "about.json"))
 
+    api_data = os.path.join(ROOT, "api", "data")
+    os.makedirs(api_data, exist_ok=True)
+    shutil.copy(os.path.join(DIST, "bonds.json"), os.path.join(api_data, "bonds.json"))
+    shutil.copy(os.path.join(DIST, "about.json"), os.path.join(api_data, "about.json"))
+
     html = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     html = swap(html, "fetch('/api/bonds' + (force ? '?refresh=1' : ''))", "fetch('bonds.json')")
     html = swap(html, "fetch('/about.json')", "fetch('about.json')")

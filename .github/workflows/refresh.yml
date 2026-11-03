@@ -45,8 +45,13 @@ jobs:
       - name: Publish to vercel-snapshot
         run: |
           rm -rf snap/dist && mkdir snap/dist && cp dist/* snap/dist/
+          mkdir -p snap/api
+          cp api/chat.py snap/api/chat.py
+          cp -R api/data snap/api/data
+          cp rag.py vercel.json snap/
           cd snap
-          git add -A dist
+          git add -A dist api/chat.py rag.py vercel.json
+          git add -f -A api/data
           if git diff --cached --quiet; then
             echo "Nothing changed, nothing to publish."
           else

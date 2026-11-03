@@ -14,6 +14,24 @@ After that it refreshes itself in the background.
 Python 3.9 or newer, standard library only. `pypdf` is optional (`pip install pypdf`): without it the
 server skips the issuers' ISIN filing PDFs and everything else still works.
 
+## Bond research assistant
+
+Open **Ask Ledger** in the screener to ask questions about bonds, issuers, ratings, coupons, maturities
+and yields. Retrieval runs locally against the current NSE bond snapshot and issuer notes, and shows
+the records it used. With no model configured, answers remain in local retrieval mode and do not call
+an AI service.
+
+To enable generated answers on Vercel, add an `OPENAI_API_KEY` environment variable in the Vercel
+project settings, then redeploy. The default endpoint is OpenAI chat completions using `gpt-4o-mini`.
+You can optionally override it with `RAG_API_URL`, `RAG_MODEL`, and `RAG_API_KEY`. For another
+OpenAI-compatible provider, configure all three. The server sends only the question and retrieved
+excerpts to the model endpoint; credentials stay on the server and are never sent to the browser. Locally:
+
+    RAG_API_URL=http://localhost:11434/v1/chat/completions RAG_MODEL=llama3.2 python3 server.py
+
+Generated responses are grounded in retrieved excerpts but can still be wrong. The assistant is for
+information only, not investment advice.
+
 ## Where the data comes from
 
 - Bond list and prices: NSE's public bond feed (unofficial, can change or block access).
@@ -26,6 +44,8 @@ before you republish any of it.
 ## Static copy
 
 `python3 build_static.py` writes a server-free copy to `dist/` (a data snapshot plus the page).
+The Vercel snapshot also bundles the chat function and its read-only data snapshot; a plain static
+copy outside Vercel has no chat API.
 
 ## Automatic daily snapshot
 

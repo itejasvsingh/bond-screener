@@ -1,6 +1,7 @@
 # NSE data snapshots and the static build made from them: not for redistribution
 data/
 dist/
+api/data/
 # earlier versions of the page
 legacy/
 __pycache__/

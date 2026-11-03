@@ -69,6 +69,32 @@ class RagTests(unittest.TestCase):
             "test-key",
         ))
 
+    def test_openai_key_with_custom_rag_model(self):
+        with patch.dict("os.environ", {"OPENAI_API_KEY": "test-key", "RAG_MODEL": "gpt-4o"}, clear=True):
+            config = rag._model_configuration()
+        self.assertEqual(config, (
+            "https://api.openai.com/v1/chat/completions",
+            "gpt-4o",
+            "test-key",
+        ))
+
+    def test_gemini_key_uses_google_openai_endpoint(self):
+        with patch.dict("os.environ", {"GEMINI_API_KEY": "AIzaSy123"}, clear=True):
+            config = rag._model_configuration()
+        self.assertEqual(config, (
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+            "gemini-2.5-flash",
+            "AIzaSy123",
+        ))
+
+    def test_generic_api_key_autodetects(self):
+        with patch.dict("os.environ", {"API_KEY": "AIzaSyTest"}, clear=True):
+            config = rag._model_configuration()
+        self.assertEqual(config[0], "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions")
+        with patch.dict("os.environ", {"API_KEY": "sk-proj-test"}, clear=True):
+            config = rag._model_configuration()
+        self.assertEqual(config[0], "https://api.openai.com/v1/chat/completions")
+
     def test_invalid_provider_url_is_reported(self):
         config = {"RAG_API_URL": "https://", "RAG_MODEL": "test-model"}
         with patch.dict("os.environ", config, clear=True):

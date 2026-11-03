@@ -391,6 +391,13 @@ class Handler(SimpleHTTPRequestHandler):
         else:  # nothing else is public: no server.py, no data/, no legacy/
             self.send_error(404)
 
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
     def do_POST(self):
         if urlparse(self.path).path != "/api/chat":
             self.send_error(404)
@@ -413,9 +420,14 @@ class Handler(SimpleHTTPRequestHandler):
             return
         try:
             data = current()
-            with open(os.path.join(ROOT, "about.json"), encoding="utf-8") as about_file:
-                about_data = json.load(about_file)
-            about = about_data.get("about", {})
+            about = {}
+            about_path = os.path.join(ROOT, "about.json")
+            if os.path.exists(about_path):
+                try:
+                    with open(about_path, encoding="utf-8") as about_file:
+                        about = json.load(about_file).get("about", {})
+                except (OSError, ValueError):
+                    pass
             result = rag.answer(request.get("question"), data.get("bonds", []), about)
         except rag.ChatError as error:
             body = json.dumps({"error": str(error)}).encode("utf-8")
@@ -431,6 +443,7 @@ class Handler(SimpleHTTPRequestHandler):
             body = json.dumps(result).encode("utf-8")
             self.send_response(200)
         self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()

@@ -285,13 +285,34 @@ def _model_configuration():
     url = os.environ.get("RAG_API_URL", "").strip()
     model = os.environ.get("RAG_MODEL", "").strip()
     key = (os.environ.get("RAG_API_KEY") or os.environ.get("OPENAI_API_KEY") or "").strip()
+    gemini_key = (os.environ.get("GEMINI_API_KEY") or "").strip()
+    generic_key = (os.environ.get("API_KEY") or "").strip()
+
+    if not key and gemini_key:
+        key = gemini_key
+        if not url:
+            url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+        if not model:
+            model = "gemini-2.5-flash"
+    elif not key and generic_key:
+        key = generic_key
+        if not url:
+            if generic_key.startswith("AIza"):
+                url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+                model = model or "gemini-2.5-flash"
+            else:
+                url = "https://api.openai.com/v1/chat/completions"
+                model = model or "gpt-4o-mini"
+    elif key and not url:
+        url = "https://api.openai.com/v1/chat/completions"
+        model = model or "gpt-4o-mini"
+
     if not url and not model and not key:
         return None
-    if key and not url and not model:
-        url = "https://api.openai.com/v1/chat/completions"
-        model = "gpt-4o-mini"
     if not url or not model:
         raise ChatError("Set both RAG_API_URL and RAG_MODEL to enable generated answers.")
+    if url.rstrip("/").endswith("/v1"):
+        url = url.rstrip("/") + "/chat/completions"
     try:
         endpoint = urlsplit(url)
         endpoint.port
@@ -322,7 +343,10 @@ def _generate(question, sources, config):
             {"role": "user", "content": "Question: %s\n\nReference excerpts:\n%s" % (question, excerpts)},
         ],
     }
-    headers = {"Content-Type": "application/json"}
+    headers = {
+        "Content-Type": "application/json",
+        "User-Agent": "BondScreener/1.0 (RAG Assistant)",
+    }
     if key:
         headers["Authorization"] = "Bearer " + key
     request = Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
@@ -330,7 +354,14 @@ def _generate(question, sources, config):
         with urlopen(request, timeout=45) as response:
             result = json.loads(response.read(2_000_000).decode("utf-8"))
     except HTTPError as error:
+        details = ""
+        try:
+            details = error.read(1024).decode("utf-8", "ignore")
+        except Exception:
+            pass
         print("RAG provider returned HTTP %s" % error.code, file=sys.stderr)
+        if details:
+            print("Provider response: %s" % details[:200], file=sys.stderr)
         if error.code == 401:
             raise ProviderError(
                 "The provider rejected the API key. Verify OPENAI_API_KEY is an active OpenAI key in "
